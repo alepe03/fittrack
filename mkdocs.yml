@@ -1,0 +1,18 @@
+site_name: FitTrack Docs
+site_description: Documentación oficial del proyecto FitTrack
+site_author: Alejandro
+theme:
+  name: material
+
+nav:
+  - Inicio: index.md
+  - Arquitectura: arquitectura.md
+  - Requisitos: requisitos.md
+  - Decisiones técnicas: decisiones.md
+  - MVP: mvp.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
