@@ -47,7 +47,7 @@ async function enviar() {
             placeholder="••••"
           />
         </div>
-        <p v-if="enviado && viewModel.error" class="text-sm text-red-600">
+        <p v-if="enviado && viewModel.error" class="text-sm text-red-600" role="alert">
           {{ viewModel.error }}
         </p>
         <BotonPrimario type="submit" :disabled="viewModel.cargando" class="w-full">

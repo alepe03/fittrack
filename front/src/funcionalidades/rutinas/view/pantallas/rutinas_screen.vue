@@ -1,51 +1,46 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useRutinasViewModel } from '../../viewmodel/rutinas_viewmodel'
+import { useLocalStorage } from '@/compartido/composables/useLocalStorage'
+import { useFiltrosRutinas, type OrdenRutinas } from '@/compartido/composables/useFiltrosRutinas'
 import BotonPrimario from '@/compartido/ui/BotonPrimario.vue'
-import type { Rutina } from '../../model/entidades'
+import TarjetaRutina from '@/compartido/ui/TarjetaRutina.vue'
 
+const router = useRouter()
 const viewModel = useRutinasViewModel()
 
-/** Opciones de orden: A-Z, Z-A, más recientes primero. */
-type OrdenRutinas = 'az' | 'za' | 'recientes'
+/** Preferencia de orden persistida en localStorage (criterio DEW). */
+const { valor: ordenRef } = useLocalStorage<OrdenRutinas>('fittrack_rutinas_orden', 'az')
+const orden = computed({
+  get: () => ordenRef.value ?? 'az',
+  set: (v: OrdenRutinas) => { ordenRef.value = v },
+})
 
 const textoBusqueda = ref('')
-const orden = ref<OrdenRutinas>('az')
+
+const { rutinasFiltradasYOrdenadas } = useFiltrosRutinas(
+  computed(() => viewModel.rutinasLista as import('../../model/entidades').Rutina[]),
+  textoBusqueda,
+  orden
+)
 
 onMounted(() => {
   viewModel.cargarRutinas()
 })
 
-/** Lista filtrada y ordenada sin mutar el array del store (copia). */
-const rutinasFiltradasYOrdenadas = computed(() => {
-  const lista = [...viewModel.rutinasLista] as Rutina[]
-  const texto = textoBusqueda.value.trim().toLowerCase()
-  let resultado = texto
-    ? lista.filter((r) => r.nombre.toLowerCase().includes(texto))
-    : lista
-  // Ordenar sobre la copia
-  if (orden.value === 'az') {
-    resultado = resultado.slice().sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-  } else if (orden.value === 'za') {
-    resultado = resultado.slice().sort((a, b) => b.nombre.localeCompare(a.nombre, 'es'))
-  } else {
-    resultado = resultado.slice().sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
-  }
-  return resultado
-})
+function irARutina(id: string) {
+  router.push(`/rutinas/${id}`)
+}
 </script>
 
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Rutinas</h1>
-      <RouterLink to="/rutinas/nueva">
-        <BotonPrimario>Nueva rutina</BotonPrimario>
-      </RouterLink>
+      <BotonPrimario @click="router.push('/rutinas/nueva')">Nueva rutina</BotonPrimario>
     </div>
 
-    <!-- Fila: buscador + orden (solo si hay datos) -->
     <div
       v-if="!viewModel.cargando && !viewModel.error && viewModel.rutinasLista.length > 0"
       class="flex flex-wrap items-center gap-3 mb-4"
@@ -67,7 +62,7 @@ const rutinasFiltradasYOrdenadas = computed(() => {
     </div>
 
     <p v-if="viewModel.cargando" class="text-gray-600">Cargando...</p>
-    <p v-else-if="viewModel.error" class="text-red-600">{{ viewModel.error }}</p>
+    <p v-else-if="viewModel.error" class="text-red-600" role="alert">{{ viewModel.error }}</p>
     <div v-else-if="viewModel.rutinasLista.length === 0" class="rounded-xl bg-white p-6 shadow text-center text-gray-500">
       No hay rutinas. Crea una para empezar.
     </div>
@@ -75,15 +70,8 @@ const rutinasFiltradasYOrdenadas = computed(() => {
       No hay rutinas que coincidan con la búsqueda.
     </div>
     <ul v-else class="space-y-3">
-      <li
-        v-for="r in rutinasFiltradasYOrdenadas"
-        :key="r.id"
-        class="rounded-xl bg-white shadow p-4 hover:shadow-md transition"
-      >
-        <RouterLink :to="`/rutinas/${r.id}`" class="block">
-          <span class="font-medium text-gray-800">{{ r.nombre }}</span>
-          <span class="text-sm text-gray-500 ml-2">{{ r.ejercicios.length }} ejercicios</span>
-        </RouterLink>
+      <li v-for="r in rutinasFiltradasYOrdenadas" :key="r.id">
+        <TarjetaRutina :rutina="r" @ver="irARutina" />
       </li>
     </ul>
   </div>

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { onMounted, computed, ref } from 'vue'
+import { onMounted, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRutinasViewModel } from '@/funcionalidades/rutinas/viewmodel/rutinas_viewmodel'
 import { useEntrenamientosViewModel } from '../../viewmodel/entrenamientos_viewmodel'
+import { useEntrenamientoEnCurso } from '@/compartido/composables/useEntrenamientoEnCurso'
 import BotonPrimario from '@/compartido/ui/BotonPrimario.vue'
 import type { EntrenoItem } from '../../model/entidades'
 
@@ -10,6 +11,7 @@ const route = useRoute()
 const router = useRouter()
 const viewModelRutinas = useRutinasViewModel()
 const viewModelEntrenos = useEntrenamientosViewModel()
+const { obtener: obtenerEnCurso, guardar: guardarEnCurso, limpiar: limpiarEnCurso } = useEntrenamientoEnCurso()
 
 const rutinaId = computed(() => route.params.rutinaId as string)
 const items = ref<EntrenoItem[]>([])
@@ -19,13 +21,25 @@ onMounted(async () => {
   await viewModelRutinas.cargarRutinaPorId(rutinaId.value)
   const rutina = viewModelRutinas.rutinaActual
   if (rutina) {
-    items.value = rutina.ejercicios.map((ej) => ({
-      ejercicioId: ej.id,
-      nombre: ej.nombre,
-      series: ej.seriesObjetivo.map((s) => ({ reps: s.reps, peso: s.pesoSugerido })),
-    }))
+    const guardado = obtenerEnCurso()
+    if (guardado && guardado.rutinaId === rutinaId.value && guardado.items.length > 0) {
+      items.value = guardado.items
+    } else {
+      items.value = rutina.ejercicios.map((ej) => ({
+        ejercicioId: ej.id,
+        nombre: ej.nombre,
+        series: ej.seriesObjetivo.map((s) => ({ reps: s.reps, peso: s.pesoSugerido })),
+      }))
+    }
   }
 })
+
+watch(items, (val) => {
+  const nombre = viewModelRutinas.rutinaActual?.nombre
+  if (rutinaId.value && nombre && val.length > 0) {
+    guardarEnCurso({ rutinaId: rutinaId.value, nombreRutina: nombre, items: val })
+  }
+}, { deep: true })
 
 const nombreRutina = computed(() => viewModelRutinas.rutinaActual?.nombre ?? '')
 
@@ -52,6 +66,7 @@ async function guardar() {
   }
   const entreno = await viewModelEntrenos.crearEntreno(payload)
   if (entreno) {
+    limpiarEnCurso()
     router.push(`/entrenos/${entreno.id}`)
   }
 }
@@ -98,8 +113,12 @@ async function guardar() {
         </div>
       </div>
 
-      <p v-if="errorValidacion" class="text-red-600 text-sm">{{ errorValidacion }}</p>
-      <p v-if="viewModelEntrenos.error" class="text-red-600 text-sm">{{ viewModelEntrenos.error }}</p>
+      <p v-if="errorValidacion" class="text-red-600 text-sm" role="alert">
+        {{ errorValidacion }}
+      </p>
+      <p v-if="viewModelEntrenos.error" class="text-red-600 text-sm" role="alert">
+        {{ viewModelEntrenos.error }}
+      </p>
 
       <div class="flex gap-3">
         <BotonPrimario :disabled="viewModelEntrenos.cargando" @click="guardar">Guardar entreno</BotonPrimario>
