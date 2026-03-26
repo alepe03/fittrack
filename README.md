@@ -43,7 +43,7 @@ mkdocs build
 
 ```text
 fittrack/
-  frontend/
+  front/
   backend/
   docs/
   deploy/

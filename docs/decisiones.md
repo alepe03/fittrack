@@ -9,8 +9,43 @@ Se optó por Vue 3 con TypeScript para construir un frontend moderno y mantenibl
 La Composition API permite una mejor separación de la lógica y una mayor escalabilidad de los componentes.
 
 ## Laravel
+Laravel se eligió para implementar la API REST del backend por su ecosistema maduro (migraciones, Eloquent/relaciones, validación y transacciones), usando PostgreSQL como motor de base de datos.
 
-Laravel se eligió para implementar la API REST del backend por su ecosistema maduro, validación integrada, migraciones y herramientas de autenticación.
+## API REST
+Se decidió exponer una API REST con endpoints claros para CRUD y operaciones específicas del dominio de rutinas:
+- listado y detalle
+- crear rutina completa
+- actualizar por reemplazo total
+- borrar por cascada en base de datos
+- duplicar rutina
+
+## Payload anidado en `rutinas`
+Para mantener la implementación simple y coherente con el formulario del frontend, la API de `rutinas` recibe un payload anidado:
+- `rutina`
+- lista de `ejercicios` (plantilla)
+- lista de `series` dentro de cada ejercicio
+
+Esto evita lógica de “diferencias/diff” y hace que la creación/edición sea robusta para formularios dinámicos.
+
+## Update por reemplazo completo
+La actualización (`PUT /api/rutinas/{id}`) está implementada como reemplazo total:
+- se actualiza el registro base de la rutina
+- se borran los ejercicios/series actuales asociados a esa rutina
+- se recrean los nuevos ejercicios/series recibidos
+
+La decisión favorece claridad, robustez y rapidez de implementación frente a una sincronización incremental compleja.
+
+## `user_id` fijo temporal (sin auth real)
+Como el backend todavía no tiene autenticación real integrada, el frontend usa temporalmente `user_id = 1` al crear/actualizar rutinas. Esta decisión se documenta como parte del alcance y se revisará cuando exista auth real.
+
+## Decisiones de frontend (arquitectura simple)
+Se mantiene una organización clara por capas dentro del módulo:
+- `data/`: repositorio y acceso a API (mock en entrenos; API real en rutinas)
+- `model/`: interfaces tipadas
+- `viewmodel/`: stores Pinia (estado + operaciones)
+- `view/pantallas`: SFCs que renderizan y llaman a las operaciones
+
+Además, se usan composables para persistencias (localStorage/sessionStorage) y utilidades (filtros/orden).
 
 ## Estructura monorepo
 
@@ -41,10 +76,18 @@ El layout se ha diseñado mobile-first y luego se han ajustado los contenedores 
 Se han aplicado mejoras básicas alineadas con WCAG:
 
 - Colores con contraste suficiente (texto oscuro sobre fondo claro, botones azules sobre blanco).
-- Formularios con `<label>` asociados a sus campos (login, formularios de rutina y entreno).
-- Modal base con `role="dialog"` y `aria-modal="true"`, más un título dentro del slot `titulo`.
+- Formularios con `<label>` asociados a sus campos (visibles o `sr-only`) en login, filtros de rutinas y formularios de rutina/entreno.
+- Modal base con `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, `aria-describedby`.
+- Modal con cierre por tecla `Escape`, foco inicial al abrir, devolución de foco al cerrar y focus trap básico.
 - Estados de error marcados con color y `role="alert"` en mensajes importantes.
 - Estados de foco visibles (`focus-visible`) en botones, enlaces de navegación y enlaces de listas, usando `ring` de Tailwind.
+
+Evidencias principales en código:
+- `front/src/compartido/ui/BaseModal.vue`
+- `front/src/funcionalidades/rutinas/view/pantallas/rutinas_screen.vue`
+- `front/src/funcionalidades/rutinas/view/pantallas/rutina_form_screen.vue`
+- `front/src/funcionalidades/entrenamientos/view/pantallas/entreno_form_desde_rutina_screen.vue`
+- `front/index.html`
 
 ### Usabilidad
 
@@ -61,3 +104,14 @@ Esta parte de DOR se puede defender enseñando:
 - El botón primario (`BotonPrimario.vue`) y los estados de foco.
 - El modal (`BaseModal.vue`) con sus atributos de accesibilidad.
 - Las pantallas principales en modo responsive (login, rutinas, entrenos y registro de entreno).
+
+## Implementado vs futuro (DOR)
+
+Implementado actualmente:
+- Base responsive mobile-first con Tailwind.
+- Accesibilidad básica operativa en formularios y modal.
+- Consistencia visual de acciones primarias/secundarias.
+
+Futuro recomendado:
+- Auditoría WCAG más profunda (teclado y lector de pantalla con checklist formal).
+- Tokens de diseño (colores/espaciado) más explícitos.

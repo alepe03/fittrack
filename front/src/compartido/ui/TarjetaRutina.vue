@@ -31,7 +31,7 @@ function verDetalle() {
       </button>
     </template>
     <template #default>
-      <span class="text-sm text-gray-500">{{ rutina.ejercicios.length }} ejercicios</span>
+      <span class="text-sm text-gray-500">{{ rutina.ejercicios_count ?? rutina.ejercicios.length }} ejercicios</span>
     </template>
   </BaseCard>
 </template>
