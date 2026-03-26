@@ -1,119 +1,172 @@
 /**
- * API mock de rutinas: datos en memoria + persistencia en localStorage.
+ * API real de rutinas.
+ * Convierte el payload Laravel (snake_case + timestamps ISO) al modelo del frontend (camelCase + timestamps numéricos).
  */
-import type { Rutina } from '../model/entidades'
+import type { Rutina, RutinaEjercicio, SerieObjetivo } from '../model/entidades'
+import { clienteApi } from '@/nucleo/red/cliente_api'
 
-const CLAVE_STORAGE = 'gym_rutinas'
+const USER_ID_FIJO = 1
 
-function generarId(): string {
-  return Math.random().toString(36).slice(2, 12)
+function parseFechaIsoToMillis(fechaIso: unknown): number | undefined {
+  if (!fechaIso) return undefined
+  if (typeof fechaIso === 'number') return fechaIso
+  const t = Date.parse(String(fechaIso))
+  return Number.isFinite(t) ? t : undefined
 }
 
-function cargarDesdeStorage(): Rutina[] {
-  try {
-    const raw = localStorage.getItem(CLAVE_STORAGE)
-    if (raw) {
-      const parsed = JSON.parse(raw) as Rutina[]
-      return Array.isArray(parsed) ? parsed : []
-    }
-  } catch {
-    // ignorar
+function pesoASugeridoNumero(peso_sugerido: unknown): number {
+  if (peso_sugerido === null || peso_sugerido === undefined) return 0
+  const n = Number(peso_sugerido)
+  return Number.isFinite(n) ? n : 0
+}
+
+function mapSerieObjetivoDesdeApi(serie: any): SerieObjetivo {
+  return {
+    reps: Number(serie.reps_objetivo),
+    pesoSugerido: pesoASugeridoNumero(serie.peso_sugerido),
   }
-  return []
 }
 
-function guardarEnStorage(rutinas: Rutina[]): void {
-  localStorage.setItem(CLAVE_STORAGE, JSON.stringify(rutinas))
+function mapEjercicioDesdeApi(ej: any): RutinaEjercicio {
+  return {
+    id: String(ej.id),
+    nombre: ej.nombre,
+    orden: ej.orden,
+    seriesObjetivo: (ej.series ?? []).map(mapSerieObjetivoDesdeApi),
+  }
 }
 
-let rutinas: Rutina[] = cargarDesdeStorage()
+function mapRutinaListadoDesdeApi(apiRutina: any): Rutina {
+  return {
+    id: String(apiRutina.id),
+    nombre: apiRutina.nombre,
+    descripcion: apiRutina.descripcion ?? null,
+    createdAt: parseFechaIsoToMillis(apiRutina.created_at),
+    updatedAt: parseFechaIsoToMillis(apiRutina.updated_at),
+    ejercicios_count: Number(apiRutina.ejercicios_count ?? 0),
+    // En listado no hace falta traer ejercicios completos.
+    ejercicios: [],
+  }
+}
+
+function mapRutinaCompletaDesdeApi(apiRutina: any): Rutina {
+  return {
+    id: String(apiRutina.id),
+    nombre: apiRutina.nombre,
+    descripcion: apiRutina.descripcion ?? null,
+    createdAt: parseFechaIsoToMillis(apiRutina.created_at),
+    updatedAt: parseFechaIsoToMillis(apiRutina.updated_at),
+    ejercicios_count: undefined,
+    ejercicios: (apiRutina.ejercicios ?? []).map(mapEjercicioDesdeApi),
+  }
+}
+
+function mapEjerciciosParaApi(ejercicios: RutinaEjercicio[]): any[] {
+  return ejercicios.map((ej, idx) => {
+    const ordenEj = idx + 1
+    return {
+      nombre: ej.nombre,
+      orden: ordenEj,
+      series: (ej.seriesObjetivo ?? []).map((s, sIdx) => ({
+        orden: sIdx + 1,
+        reps_objetivo: Number(s.reps),
+        peso_sugerido: s.pesoSugerido,
+      })),
+    }
+  })
+}
+
+function extraerMensajeError(error: unknown): string {
+  if (typeof error === 'object' && error) {
+    const anyErr = error as any
+    if (anyErr?.response?.data?.message) return String(anyErr.response.data.message)
+    if (anyErr?.message) return String(anyErr.message)
+  }
+  return 'Error en la operación'
+}
 
 export async function listarRutinas(): Promise<Rutina[]> {
-  await new Promise((r) => setTimeout(r, 200))
-  rutinas = cargarDesdeStorage()
-  return [...rutinas]
+  const resp = await clienteApi.get('/rutinas')
+  if (import.meta.env.DEV) {
+    // Temporal para verificar el contrato real que devuelve el backend en entorno local.
+    console.log('[rutinas_api] GET /rutinas payload:', resp.data)
+  }
+
+  if (!Array.isArray(resp.data)) {
+    throw new Error('Respuesta inválida en GET /rutinas: se esperaba un array JSON.')
+  }
+
+  return resp.data.map(mapRutinaListadoDesdeApi)
 }
 
 export async function obtenerRutinaPorId(id: string): Promise<Rutina | null> {
-  await new Promise((r) => setTimeout(r, 150))
-  rutinas = cargarDesdeStorage()
-  return rutinas.find((r) => r.id === id) ?? null
+  try {
+    const resp = await clienteApi.get(`/rutinas/${id}`)
+    return mapRutinaCompletaDesdeApi(resp.data)
+  } catch (error: unknown) {
+    const anyErr = error as any
+    if (anyErr?.response?.status === 404) return null
+    throw new Error(extraerMensajeError(error))
+  }
 }
 
 export async function crearRutina(rutina: Omit<Rutina, 'id'>): Promise<Rutina> {
-  await new Promise((r) => setTimeout(r, 200))
-  rutinas = cargarDesdeStorage()
-  const nueva: Rutina = {
-    ...rutina,
-    id: generarId(),
-    createdAt: Date.now(),
+  const payload = {
+    user_id: USER_ID_FIJO,
+    nombre: rutina.nombre,
+    descripcion: rutina.descripcion ?? null,
+    ejercicios: mapEjerciciosParaApi(rutina.ejercicios ?? []),
   }
-  rutinas.push(nueva)
-  guardarEnStorage(rutinas)
-  return { ...nueva }
+
+  const resp = await clienteApi.post('/rutinas', payload)
+  return mapRutinaCompletaDesdeApi(resp.data)
 }
 
 export async function actualizarRutina(id: string, datos: Partial<Rutina>): Promise<Rutina | null> {
-  await new Promise((r) => setTimeout(r, 200))
-  rutinas = cargarDesdeStorage()
-  const idx = rutinas.findIndex((r) => r.id === id)
-  if (idx === -1) return null
-  const actual = rutinas[idx]!
-  const actualizada: Rutina = {
-    id: actual.id,
-    nombre: datos.nombre ?? actual.nombre,
-    ejercicios: datos.ejercicios ?? actual.ejercicios,
-    createdAt: actual.createdAt ?? Date.now(), // al editar no se cambia
+  // Implementación mínima: si no viene la rutina completa (ejercicios), no tiene sentido
+  // porque la API hace reemplazo total.
+  if (!datos.nombre || !datos.ejercicios) return null
+
+  const payload = {
+    user_id: USER_ID_FIJO,
+    nombre: datos.nombre,
+    descripcion: datos.descripcion ?? null,
+    ejercicios: mapEjerciciosParaApi(datos.ejercicios),
   }
-  rutinas[idx] = actualizada
-  guardarEnStorage(rutinas)
-  return { ...actualizada }
+
+  try {
+    const resp = await clienteApi.put(`/rutinas/${id}`, payload)
+    return mapRutinaCompletaDesdeApi(resp.data)
+  } catch (error: unknown) {
+    const anyErr = error as any
+    if (anyErr?.response?.status === 404) return null
+    throw new Error(extraerMensajeError(error))
+  }
 }
 
-/** Actualiza una rutina completa por su id (array + localStorage). */
+/** Actualiza una rutina completa (reemplazo total). */
 export async function actualizarRutinaCompleta(rutina: Rutina): Promise<Rutina | null> {
-  return actualizarRutina(rutina.id, { nombre: rutina.nombre, ejercicios: rutina.ejercicios })
+  return actualizarRutina(rutina.id, rutina)
 }
 
 export async function eliminarRutina(id: string): Promise<boolean> {
-  await new Promise((r) => setTimeout(r, 150))
-  rutinas = cargarDesdeStorage()
-  const idx = rutinas.findIndex((r) => r.id === id)
-  if (idx === -1) return false
-  rutinas.splice(idx, 1)
-  guardarEnStorage(rutinas)
-  return true
-}
-
-/** Genera un id único (crypto.randomUUID si existe, si no Date.now). */
-function generarIdUnico(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
-    return crypto.randomUUID()
+  try {
+    await clienteApi.delete(`/rutinas/${id}`)
+    return true
+  } catch (error: unknown) {
+    const anyErr = error as any
+    if (anyErr?.response?.status === 404) return false
+    throw new Error(extraerMensajeError(error))
   }
-  return String(Date.now())
 }
 
-/**
- * Duplica una rutina: nuevo id (crypto.randomUUID o Date.now), nombre "<nombre> (copia)",
- * ejercicios y series clonados en profundidad (nuevos ids en ejercicios).
- */
 export async function duplicarRutina(idOrigen: string): Promise<Rutina | null> {
-  await new Promise((r) => setTimeout(r, 200))
-  rutinas = cargarDesdeStorage()
-  const origen = rutinas.find((r) => r.id === idOrigen) ?? null
-  if (!origen) return null
-  const ejerciciosClonados = origen.ejercicios.map((ej) => ({
-    id: generarId(),
-    nombre: ej.nombre,
-    seriesObjetivo: ej.seriesObjetivo.map((s) => ({ reps: s.reps, pesoSugerido: s.pesoSugerido })),
-  }))
-  const nueva: Rutina = {
-    id: generarIdUnico(),
-    nombre: `${origen.nombre} (copia)`,
-    ejercicios: ejerciciosClonados,
-    createdAt: Date.now(),
+  try {
+    const resp = await clienteApi.post(`/rutinas/${idOrigen}/duplicar`)
+    return mapRutinaCompletaDesdeApi(resp.data)
+  } catch (error: unknown) {
+    const anyErr = error as any
+    if (anyErr?.response?.status === 404) return null
+    throw new Error(extraerMensajeError(error))
   }
-  rutinas.push(nueva)
-  guardarEnStorage(rutinas)
-  return { ...nueva }
 }

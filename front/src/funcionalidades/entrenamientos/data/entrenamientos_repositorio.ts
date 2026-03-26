@@ -14,6 +14,12 @@ export const entrenamientosRepositorio = {
   async crear(datos: Omit<Entreno, 'id'>): Promise<Entreno> {
     return entrenamientosApi.crearEntreno(datos)
   },
+  async actualizar(id: string, datos: Omit<Entreno, 'id'>): Promise<Entreno | null> {
+    return entrenamientosApi.actualizarEntreno(id, datos)
+  },
+  async eliminar(id: string): Promise<boolean> {
+    return entrenamientosApi.eliminarEntreno(id)
+  },
   async borrarPorRutinaId(rutinaId: string): Promise<void> {
     return entrenamientosApi.borrarEntrenosPorRutina(rutinaId)
   },

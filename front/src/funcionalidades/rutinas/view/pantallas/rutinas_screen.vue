@@ -36,24 +36,28 @@ function irARutina(id: string) {
 
 <template>
   <div>
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
       <h1 class="text-2xl font-bold text-gray-800">Rutinas</h1>
-      <BotonPrimario @click="router.push('/rutinas/nueva')">Nueva rutina</BotonPrimario>
+      <BotonPrimario class="w-full sm:w-auto" @click="router.push('/rutinas/nueva')">Nueva rutina</BotonPrimario>
     </div>
 
     <div
       v-if="!viewModel.cargando && !viewModel.error && viewModel.rutinasLista.length > 0"
-      class="flex flex-wrap items-center gap-3 mb-4"
+      class="rounded-xl bg-white p-3 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3 mb-4"
     >
+      <label for="rutinas-busqueda" class="sr-only">Buscar rutinas por nombre</label>
       <input
+        id="rutinas-busqueda"
         v-model="textoBusqueda"
         type="search"
         placeholder="Buscar por nombre..."
-        class="rounded-lg border border-gray-300 px-3 py-2 w-56 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="rounded-lg border border-gray-300 px-3 py-2 w-full sm:w-56 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       />
+      <label for="rutinas-orden" class="sr-only">Ordenar rutinas</label>
       <select
+        id="rutinas-orden"
         v-model="orden"
-        class="rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        class="rounded-lg border border-gray-300 px-3 py-2 w-full sm:w-auto focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
       >
         <option value="az">A-Z</option>
         <option value="za">Z-A</option>

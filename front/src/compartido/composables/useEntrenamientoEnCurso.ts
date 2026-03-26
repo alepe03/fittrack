@@ -12,6 +12,7 @@ export interface EntrenoEnCurso {
   rutinaId: string
   nombreRutina: string
   items: EntrenoItem[]
+  notaGeneral?: string
 }
 
 export function useEntrenamientoEnCurso() {

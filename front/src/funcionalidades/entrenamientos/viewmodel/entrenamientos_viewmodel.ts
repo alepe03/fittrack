@@ -1,5 +1,5 @@
 /**
- * ViewModel de entrenamientos: acciones que usan las vistas (listar, obtener, crear).
+ * ViewModel de entrenamientos: acciones que usan las vistas (listar, obtener, crear, actualizar, borrar).
  */
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
@@ -55,6 +55,42 @@ export const useEntrenamientosViewModel = defineStore('entrenamientos', () => {
     }
   }
 
+  async function actualizarEntreno(id: string, datos: Omit<Entreno, 'id'>): Promise<Entreno | null> {
+    cargando.value = true
+    error.value = null
+    try {
+      const actualizado = await entrenamientosRepositorio.actualizar(id, datos)
+      if (actualizado) {
+        entrenos.value = await entrenamientosRepositorio.listar()
+        entrenoActual.value = actualizado
+      }
+      return actualizado
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al actualizar entreno'
+      return null
+    } finally {
+      cargando.value = false
+    }
+  }
+
+  async function borrarEntreno(id: string): Promise<boolean> {
+    cargando.value = true
+    error.value = null
+    try {
+      const ok = await entrenamientosRepositorio.eliminar(id)
+      if (ok) {
+        entrenos.value = await entrenamientosRepositorio.listar()
+        if (entrenoActual.value?.id === id) entrenoActual.value = null
+      }
+      return ok
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Error al borrar entreno'
+      return false
+    } finally {
+      cargando.value = false
+    }
+  }
+
   function limpiarEntrenoActual(): void {
     entrenoActual.value = null
   }
@@ -67,6 +103,8 @@ export const useEntrenamientosViewModel = defineStore('entrenamientos', () => {
     cargarEntrenos,
     cargarEntrenoPorId,
     crearEntreno,
+    actualizarEntreno,
+    borrarEntreno,
     limpiarEntrenoActual,
   }
 })

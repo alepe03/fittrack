@@ -52,6 +52,30 @@ export async function crearEntreno(datos: Omit<Entreno, 'id'>): Promise<Entreno>
   return { ...nuevo }
 }
 
+export async function actualizarEntreno(id: string, datos: Omit<Entreno, 'id'>): Promise<Entreno | null> {
+  await new Promise((r) => setTimeout(r, 200))
+  entrenos = cargarDesdeStorage()
+  const idx = entrenos.findIndex((e) => e.id === id)
+  if (idx === -1) return null
+  const actualizado: Entreno = {
+    ...datos,
+    id,
+  }
+  entrenos[idx] = actualizado
+  guardarEnStorage(entrenos)
+  return { ...actualizado }
+}
+
+export async function eliminarEntreno(id: string): Promise<boolean> {
+  await new Promise((r) => setTimeout(r, 150))
+  entrenos = cargarDesdeStorage()
+  const idx = entrenos.findIndex((e) => e.id === id)
+  if (idx === -1) return false
+  entrenos.splice(idx, 1)
+  guardarEnStorage(entrenos)
+  return true
+}
+
 /** Borra todos los entrenos asociados a una rutina y persiste en localStorage. */
 export async function borrarEntrenosPorRutina(rutinaId: string): Promise<void> {
   await new Promise((r) => setTimeout(r, 100))

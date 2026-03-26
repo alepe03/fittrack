@@ -4,6 +4,10 @@
 export interface SerieReal {
   reps: number
   peso: number
+  completada: boolean
+  rir: number
+  esPR?: boolean
+  comparativaObjetivo?: 'superado' | 'cumplido' | 'por_debajo'
 }
 
 export interface EntrenoItem {
@@ -18,4 +22,7 @@ export interface Entreno {
   rutinaId: string
   nombreRutina: string
   items: EntrenoItem[]
+  notaGeneral?: string
+  duracionSegundos?: number
+  descansoSegundosUsado?: number
 }

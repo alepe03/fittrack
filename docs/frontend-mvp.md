@@ -2,7 +2,7 @@
 
 ## 1. Introducción
 
-FitTrack es una aplicación web para el seguimiento de rutinas de gimnasio, entrenamientos y progreso físico. Este documento describe el alcance funcional mínimo del frontend según el estado actual del proyecto. Sirve como referencia del MVP real implementado o parcialmente implementado, sin inventar funcionalidades que no existan en el código. El objetivo es tener una base clara del alcance del frontend antes de diseñar el modelo de datos y la API REST del backend.
+FitTrack es una SPA para seguimiento de rutinas y entrenamientos. Este documento delimita el **MVP real implementado** en `front/` y separa explícitamente lo **futuro**.
 
 ---
 
@@ -15,9 +15,9 @@ El frontend está organizado por funcionalidades y expone las siguientes pantall
 - **Ruta:** `/login`
 - **Componente:** `login_screen.vue` (funcionalidad autenticación)
 - **Objetivo:** Permitir al usuario identificarse con email y contraseña para acceder al resto de la aplicación.
-- **Información que muestra:** Formulario con campos email y contraseña, mensaje de error si el login falla, texto de ayuda con credenciales de demo.
+- **Información que muestra:** Formulario con campos email y contraseña, mensaje de error si el login falla, texto de ayuda con credenciales de demo (autenticación simulada).
 - **Acciones disponibles:** Enviar el formulario (login). Tras un login correcto se redirige a `/rutinas`.
-- **Datos necesarios:** Credenciales (email, contraseña). El token se persiste en localStorage y el guard del router comprueba su existencia para permitir el acceso a rutas protegidas.
+- **Datos necesarios:** Credenciales (email, contraseña). El token se persiste en localStorage (token simulado) y el guard del router comprueba su existencia para permitir el acceso a rutas protegidas.
 
 ### 2.2 Listado de rutinas
 
@@ -25,7 +25,7 @@ El frontend está organizado por funcionalidades y expone las siguientes pantall
 - **Componente:** `rutinas_screen.vue`
 - **Objetivo:** Mostrar todas las rutinas del usuario y permitir buscar, ordenar y acceder al detalle o a la creación de una nueva.
 - **Información que muestra:** Título "Rutinas", lista de rutinas (nombre y número de ejercicios), buscador por nombre, selector de orden (A-Z, Z-A, más recientes primero). Estados de carga, error y listas vacías o sin resultados.
-- **Acciones disponibles:** Crear nueva rutina (enlace a `/rutinas/nueva`), buscar por texto, cambiar orden (preferencia persistida en localStorage), hacer clic en una rutina para ir a su detalle (a través del componente RoutineCard y su emit `ver`).
+- **Acciones disponibles:** Crear nueva rutina (enlace a `/rutinas/nueva`), buscar por texto, cambiar orden (preferencia persistida en localStorage), hacer clic en una rutina para ir a su detalle (a través del componente `TarjetaRutina.vue` y su emit `ver`).
 - **Datos necesarios:** Lista de rutinas desde el store de Pinia (cargada por el viewmodel de rutinas). La preferencia de orden se lee y guarda en localStorage con la clave `fittrack_rutinas_orden`.
 
 ### 2.3 Crear rutina / Editar rutina
@@ -78,10 +78,10 @@ El frontend está organizado por funcionalidades y expone las siguientes pantall
 ## 3. Flujo principal del usuario
 
 1. **Acceso:** El usuario abre la aplicación. Si no tiene token en localStorage, el guard del router le redirige a `/login`.
-2. **Login:** Introduce email y contraseña en la pantalla de login. Si el login es correcto, se guarda el token y se redirige a `/rutinas`.
+2. **Login:** Introduce email y contraseña en la pantalla de login. Si el login es correcto, se guarda un token simulado y se redirige a `/rutinas`.
 3. **Listado de rutinas:** En `/rutinas` ve sus rutinas, puede buscar por nombre y cambiar el orden (A-Z, Z-A, más recientes). La preferencia de orden se persiste en localStorage.
 4. **Crear rutina:** Desde "Nueva rutina" accede a `/rutinas/nueva`, define nombre y ejercicios con series objetivo, guarda y es redirigido al detalle de la rutina creada.
-5. **Consultar rutina:** Desde el listado hace clic en una rutina (RoutineCard emite `ver`) y navega a `/rutinas/:id`, donde ve nombre, ejercicios y series objetivo.
+5. **Consultar rutina:** Desde el listado hace clic en una rutina (`TarjetaRutina` emite `ver`) y navega a `/rutinas/:id`, donde ve nombre, ejercicios y series objetivo.
 6. **Editar / Duplicar / Borrar:** En el detalle puede editar (mismo formulario en modo edición), duplicar la rutina o borrarla; el borrado se confirma en un modal (BaseModal).
 7. **Registrar entreno:** En el detalle de la rutina pulsa "Registrar entreno" y va a `/entrenos/nuevo/:rutinaId`. Rellena reps y peso por serie. Si recarga la página, los datos del formulario se recuperan de sessionStorage (entrenamiento en curso). Al guardar, se crea el entreno y se redirige al detalle del entreno; se limpia el borrador en sessionStorage.
 8. **Ver entrenos:** Desde la navegación puede ir a `/entrenos` y ver la lista de entrenos registrados (nombre de rutina y fecha).
@@ -92,11 +92,11 @@ El frontend está organizado por funcionalidades y expone las siguientes pantall
 
 ## 4. Componentes reutilizables relevantes
 
-- **BaseCard** (`compartido/ui/BaseCard.vue`): Contenedor con slots `titulo`, `default` y `acciones`. Se usa en RoutineCard (tarjeta de rutina en el listado) y en el detalle de rutina para el bloque "Ejercicios de la rutina". Da una estructura uniforme a las tarjetas y bloques de contenido.
+- **BaseCard** (`compartido/ui/BaseCard.vue`): Contenedor con slots `titulo`, `default` y `acciones`. Se usa en `TarjetaRutina` (tarjeta de rutina en el listado) y en el detalle de rutina para el bloque "Ejercicios de la rutina". Da una estructura uniforme a las tarjetas y bloques de contenido.
 
 - **BaseModal** (`compartido/ui/BaseModal.vue`): Modal con prop `visible`, emit `cerrar` y slots `titulo`, `default` y `pie`. Se usa en el detalle de rutina para la confirmación de borrado (título, texto explicativo y botones Cancelar / Borrar). Centraliza la presentación de diálogos modales.
 
-- **RoutineCard** (`compartido/ui/RoutineCard.vue`): Tarjeta que muestra una rutina (nombre y número de ejercicios). Recibe la prop `rutina` y emite `ver` con el id al hacer clic. El padre (listado de rutinas) reacciona navegando al detalle. Refuerza el uso de props/emits y reutiliza BaseCard.
+- **TarjetaRutina** (`compartido/ui/TarjetaRutina.vue`): Tarjeta que muestra una rutina (nombre y número de ejercicios). Recibe la prop `rutina` y emite `ver` con el id al hacer clic. El padre (listado de rutinas) reacciona navegando al detalle. Refuerza el uso de props/emits y reutiliza BaseCard.
 
 - **BotonPrimario** (`compartido/ui/BotonPrimario.vue`): Botón estilizado con props `type` y `disabled`, emit `click` y slot por defecto para el texto. Se usa en login, formularios de rutina y entreno, y en el detalle de rutina para "Registrar entreno" y "Guardar".
 
@@ -116,22 +116,22 @@ Estos componentes y composables apoyan la consistencia visual, la reutilización
 **Implementado y en uso:**
 
 - Login con token en localStorage y guard del router.
-- Listado de rutinas con búsqueda, orden (persistido en localStorage) y navegación al detalle mediante RoutineCard.
+- Listado de rutinas con búsqueda, orden (persistido en localStorage) y navegación al detalle mediante `TarjetaRutina`.
 - Creación y edición de rutinas (nombre, ejercicios, series objetivo).
 - Detalle de rutina con ejercicios en BaseCard y acciones Editar, Duplicar, Borrar (con modal de confirmación) y Registrar entreno.
 - Formulario de registro de entreno con recuperación de borrador en sessionStorage y limpieza al guardar.
 - Listado de entrenos y detalle de un entreno (solo lectura).
-- Navegación SPA con Vue Router, estado global con Pinia (autenticación, rutinas, entrenamientos) y componentes reutilizables (BaseCard, BaseModal, RoutineCard, BotonPrimario, AppLayout) y composables descritos.
+- Navegación SPA con Vue Router, estado global con Pinia (autenticación, rutinas, entrenamientos) y componentes reutilizables (BaseCard, BaseModal, TarjetaRutina, BotonPrimario, AppLayout) y composables descritos.
 
 **Posibles mejoras o ampliaciones futuras (no forman parte del MVP documentado aquí):**
 
 - Edición o borrado de un entreno ya guardado desde el detalle del entreno.
 - Filtros o paginación en el listado de entrenos.
-- Componente reutilizable tipo "EntrenoCard" en el listado de entrenos (similar a RoutineCard).
+- Componente reutilizable tipo "EntrenoCard" en el listado de entrenos (similar a `TarjetaRutina`).
 - Estadísticas o gráficos de progreso a partir de los entrenos guardados.
 - Perfil de usuario o preferencias adicionales (más allá del orden de rutinas).
 
-El MVP actual asume que los datos se obtienen y persisten mediante los repositorios/API existentes en el frontend; la forma concreta (mock, backend real, etc.) depende de la capa de datos del proyecto.
+En esta versión del MVP del frontend, el módulo **rutinas** ya consume la API REST real (Laravel) y funciona end-to-end. En cambio, **entrenos** y la **autenticación real con backend** siguen fuera de integración en esta fase y por ello el frontend mantiene persistencias mock y/o token simulado.
 
 ---
 

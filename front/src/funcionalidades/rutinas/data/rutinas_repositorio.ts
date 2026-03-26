@@ -1,9 +1,8 @@
 /**
  * Repositorio de rutinas: delega en rutinas_api (mock).
- * El borrado en cascada (rutina + entrenos asociados) lo hace borrarRutina.
+ * El borrado en cascada lo hace el backend (FKs con cascade).
  */
 import * as rutinasApi from './rutinas_api'
-import { entrenamientosRepositorio } from '@/funcionalidades/entrenamientos/data/entrenamientos_repositorio'
 import type { Rutina, RutinaEjercicio, SerieObjetivo } from '../model/entidades'
 
 export const rutinasRepositorio = {
@@ -27,7 +26,6 @@ export const rutinasRepositorio = {
   },
   /** Borra la rutina y todos los entrenos asociados (cascada). */
   async borrarRutina(id: string): Promise<boolean> {
-    await entrenamientosRepositorio.borrarPorRutinaId(id)
     return rutinasApi.eliminarRutina(id)
   },
   async duplicarRutina(id: string): Promise<Rutina | null> {

@@ -160,7 +160,7 @@ src/
       BaseCard.vue
       BaseModal.vue
       TarjetaRutina.vue
-    compartido/composables/
+    composables/
       useLocalStorage.ts
       useFiltrosRutinas.ts
       useEntrenamientoEnCurso.ts
@@ -349,3 +349,28 @@ Algunas ideas de discurso:
   - Uso de `ref`, `reactive`, `computed` en vistas y ViewModels.
 
 Con esto, el frontend queda más **coherente, limpio y defendible** de cara a la entrega de DEW.
+
+---
+
+## 10. Estado implementado y evolución futura
+
+### Implementado en el frontend actual (`front/`)
+
+- Login y logout con token en `localStorage`.
+- CRUD de rutinas (crear, editar, duplicar, borrar y listar).
+- Registro de entreno desde rutina.
+- Histórico y detalle de entrenos.
+- Persistencia de entreno en curso en `sessionStorage`.
+- Mejoras DOR básicas (labels/ids accesibles, modal con teclado y foco, ajustes responsive en formularios densos).
+
+### Evolución futura (no implementada actualmente)
+
+- Registro de usuario.
+- Catálogo global de ejercicios.
+- Estadísticas de progreso.
+- Integración completa con API real en lugar de persistencia mock local.
+
+### Trazabilidad rápida DEW/DOR
+
+- DEW (router/pinia/reactividad/composables/slots): ver `src/router/index.ts`, `src/funcionalidades/*/viewmodel/*.ts`, `src/compartido/composables/*.ts`, `src/compartido/ui/BaseCard.vue`, `src/compartido/ui/BaseModal.vue`.
+- DOR (responsive/accesibilidad/usabilidad): ver `src/compartido/ui/AppLayout.vue`, `src/compartido/ui/BaseModal.vue`, `src/funcionalidades/rutinas/view/pantallas/rutina_form_screen.vue`, `src/funcionalidades/entrenamientos/view/pantallas/entreno_form_desde_rutina_screen.vue`, `index.html`.

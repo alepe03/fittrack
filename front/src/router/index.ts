@@ -41,6 +41,11 @@ const router = createRouter({
       component: () => import('@/funcionalidades/entrenamientos/view/pantallas/entreno_form_desde_rutina_screen.vue'),
     },
     {
+      path: '/entrenos/:id/editar',
+      name: 'entreno-editar',
+      component: () => import('@/funcionalidades/entrenamientos/view/pantallas/entreno_form_desde_rutina_screen.vue'),
+    },
+    {
       path: '/entrenos/:id',
       name: 'entreno-detail',
       component: () => import('@/funcionalidades/entrenamientos/view/pantallas/entreno_detail_screen.vue'),

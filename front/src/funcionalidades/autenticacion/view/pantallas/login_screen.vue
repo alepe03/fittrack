@@ -21,8 +21,9 @@ async function enviar() {
 
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-    <div class="w-full max-w-md rounded-xl bg-white shadow-lg p-6">
+    <div class="w-full max-w-md rounded-xl bg-white shadow-lg p-5 sm:p-6">
       <h1 class="text-2xl font-bold text-gray-800 mb-4">Iniciar sesión</h1>
+      <p class="text-sm text-gray-600 mb-4">Accede para gestionar tus rutinas y entrenos.</p>
 
       <form @submit.prevent="enviar" class="space-y-4">
         <div>
@@ -50,12 +51,12 @@ async function enviar() {
         <p v-if="enviado && viewModel.error" class="text-sm text-red-600" role="alert">
           {{ viewModel.error }}
         </p>
-        <BotonPrimario type="submit" :disabled="viewModel.cargando" class="w-full">
+        <BotonPrimario type="submit" :disabled="viewModel.cargando" class="w-full min-h-11">
           {{ viewModel.cargando ? 'Entrando...' : 'Entrar' }}
         </BotonPrimario>
       </form>
 
-      <p class="mt-4 text-xs text-gray-500 text-center">
+      <p class="mt-4 text-xs text-gray-500 text-center rounded-lg bg-gray-50 border border-gray-200 px-3 py-2">
         Demo: admin@demo.com / 1234
       </p>
     </div>

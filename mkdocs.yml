@@ -10,6 +10,13 @@ nav:
   - Requisitos: requisitos.md
   - Decisiones técnicas: decisiones.md
   - MVP: mvp.md
+  - MVP Frontend: frontend-mvp.md
+  - DEW Frontend: dew-frontend.md
+  - Auditoría DEW: auditoria-dew-fit-track.md
+  - Backend (API): backend-api.md
+  - Backend (BD): backend-bd.md
+  - Presentación / Guion: presentacion-guion.md
+  - Estado actual: estado-actual.md
 
 markdown_extensions:
   - admonition
