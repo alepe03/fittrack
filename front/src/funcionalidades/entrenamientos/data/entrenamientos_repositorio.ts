@@ -1,5 +1,5 @@
 /**
- * Repositorio de entrenamientos: delega en entrenamientos_api (mock).
+ * Repositorio de entrenamientos: delega en entrenamientos_api (crear/detalle API + listado local).
  */
 import * as entrenamientosApi from './entrenamientos_api'
 import type { Entreno, EntrenoItem, SerieReal } from '../model/entidades'

@@ -4,6 +4,8 @@
 export interface SerieObjetivo {
   reps: number
   pesoSugerido: number
+  /** Orden de la serie objetivo en la rutina (viene del backend). */
+  orden?: number
 }
 
 export interface RutinaEjercicio {

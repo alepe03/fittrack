@@ -46,7 +46,7 @@ const resumen = computed(() => {
         seriesCompletadas += 1
         volumenTotal += serie.reps * serie.peso
       }
-      if (serie.esPR) totalPR += 1
+      if (serie.completada && serie.esPR === true) totalPR += 1
     }
   }
   return {
@@ -148,7 +148,7 @@ async function confirmarBorrar() {
                   {{ s.completada ? 'Completada' : 'Pendiente' }}
                 </span>
                 <span
-                  v-if="s.esPR"
+                  v-if="s.esPR === true"
                   class="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800"
                 >
                   PR

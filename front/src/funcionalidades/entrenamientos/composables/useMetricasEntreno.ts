@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import type { Rutina, SerieObjetivo } from '@/funcionalidades/rutinas/model/entidades'
 import type { EntrenoItem, SerieReal } from '../model/entidades'
 
@@ -22,8 +22,9 @@ function objetivoSerie(
   return ejercicio.seriesObjetivo[serieIdx] ?? null
 }
 
-function calcularPR(serie: SerieReal, objetivo: SerieObjetivo | null): boolean {
-  if (!objetivo) return false
+/** Solo para borrador / entreno aún no guardado: heurística local frente a la rutina. */
+function calcularPRBorrador(serie: SerieReal, objetivo: SerieObjetivo | null): boolean {
+  if (!serie.completada || !objetivo) return false
   if (serie.peso > objetivo.pesoSugerido) return true
   return serie.peso === objetivo.pesoSugerido && serie.reps > objetivo.reps
 }
@@ -31,27 +32,37 @@ function calcularPR(serie: SerieReal, objetivo: SerieObjetivo | null): boolean {
 function calcularComparativaObjetivo(
   serie: SerieReal,
   objetivo: SerieObjetivo | null
-): 'superado' | 'cumplido' | 'por_debajo' {
-  if (!objetivo) return 'por_debajo'
+): 'superado' | 'cumplido' | 'debajo' | null {
+  if (!objetivo) return null
   const cumpleReps = serie.reps >= objetivo.reps
   const cumplePeso = serie.peso >= objetivo.pesoSugerido
   if (cumpleReps && cumplePeso) {
     if (serie.reps > objetivo.reps || serie.peso > objetivo.pesoSugerido) return 'superado'
     return 'cumplido'
   }
-  return 'por_debajo'
+  return 'debajo'
 }
 
-export function useMetricasEntreno(items: Ref<EntrenoItem[]>, rutinaActual: Ref<Rutina | null>) {
+/**
+ * @param prDesdeServidor Si true (p. ej. edición de entreno cargado desde API), PR solo con `serie.esPR` del backend.
+ */
+export function useMetricasEntreno(
+  items: Ref<EntrenoItem[]>,
+  rutinaActual: Ref<Rutina | null>,
+  prDesdeServidor: Ref<boolean> = ref(false),
+) {
   function esSeriePR(ejercicioId: string, serieIdx: number, serie: SerieReal): boolean {
-    return calcularPR(serie, objetivoSerie(rutinaActual.value, ejercicioId, serieIdx))
+    if (prDesdeServidor.value) {
+      return serie.esPR === true
+    }
+    return calcularPRBorrador(serie, objetivoSerie(rutinaActual.value, ejercicioId, serieIdx))
   }
 
   function compararConObjetivo(
     ejercicioId: string,
     serieIdx: number,
     serie: SerieReal
-  ): 'superado' | 'cumplido' | 'por_debajo' {
+  ): 'superado' | 'cumplido' | 'debajo' | null {
     return calcularComparativaObjetivo(serie, objetivoSerie(rutinaActual.value, ejercicioId, serieIdx))
   }
 
@@ -69,7 +80,11 @@ export function useMetricasEntreno(items: Ref<EntrenoItem[]>, rutinaActual: Ref<
           seriesCompletadas += 1
           volumenTotal += serie.reps * serie.peso
         }
-        if (esSeriePR(item.ejercicioId, serieIdx, serie)) {
+        if (prDesdeServidor.value) {
+          if (serie.completada && serie.esPR === true) {
+            totalPR += 1
+          }
+        } else if (esSeriePR(item.ejercicioId, serieIdx, serie)) {
           totalPR += 1
         }
       }
@@ -91,7 +106,7 @@ export function useMetricasEntreno(items: Ref<EntrenoItem[]>, rutinaActual: Ref<
       ...item,
       series: item.series.map((serie, serieIdx) => ({
         ...serie,
-        esPR: esSeriePR(item.ejercicioId, serieIdx, serie),
+        esPR: prDesdeServidor.value ? serie.esPR === true : esSeriePR(item.ejercicioId, serieIdx, serie),
         comparativaObjetivo: compararConObjetivo(item.ejercicioId, serieIdx, serie),
       })),
     }))

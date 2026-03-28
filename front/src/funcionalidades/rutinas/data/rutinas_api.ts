@@ -24,6 +24,7 @@ function mapSerieObjetivoDesdeApi(serie: any): SerieObjetivo {
   return {
     reps: Number(serie.reps_objetivo),
     pesoSugerido: pesoASugeridoNumero(serie.peso_sugerido),
+    orden: serie.orden != null ? Number(serie.orden) : undefined,
   }
 }
 

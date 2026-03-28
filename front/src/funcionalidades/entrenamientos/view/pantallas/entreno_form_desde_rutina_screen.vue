@@ -22,7 +22,11 @@ const esEdicion = computed(() => route.name === 'entreno-editar')
 const items = ref<EntrenoItem[]>([])
 const notaGeneral = ref('')
 const errorValidacion = ref('')
-const { resumen, esSeriePR, compararConObjetivo, itemsConPR } = useMetricasEntreno(items, computed(() => viewModelRutinas.rutinaActual))
+const { resumen, esSeriePR, compararConObjetivo } = useMetricasEntreno(
+  items,
+  computed(() => viewModelRutinas.rutinaActual),
+  esEdicion,
+)
 const cronometro = useCronometroSesion()
 const temporizadorDescanso = useTemporizadorDescanso(90)
 const descansoPersonalizadoMin = ref(1.5)
@@ -44,6 +48,22 @@ const estadoDescansoTexto = computed(() =>
         ? 'Pausado'
         : 'Terminado'
 )
+
+/** Clases CSS: refs del composable no se desenvuelven en plantilla si están anidadas. */
+const cronometroEstadoClase = computed(() => {
+  const e = cronometro.estado.value
+  if (e === 'corriendo') return 'bg-blue-100 text-blue-800'
+  if (e === 'pausado') return 'bg-amber-100 text-amber-800'
+  return 'bg-gray-100 text-gray-700'
+})
+
+const descansoEstadoClase = computed(() => {
+  const e = temporizadorDescanso.estado.value
+  if (e === 'corriendo') return 'bg-blue-100 text-blue-800'
+  if (e === 'pausado') return 'bg-amber-100 text-amber-800'
+  if (e === 'terminado') return 'bg-emerald-100 text-emerald-800'
+  return 'bg-gray-100 text-gray-700'
+})
 const mensajeNoDisponible = computed(() =>
   esEdicion.value ? 'Entreno no encontrado.' : 'Rutina no encontrada.'
 )
@@ -84,12 +104,16 @@ onMounted(async () => {
     items.value = rutina.ejercicios.map((ej) => ({
       ejercicioId: ej.id,
       nombre: ej.nombre,
-      series: ej.seriesObjetivo.map((s) => ({
+      orden: ej.orden,
+      rutinaEjercicioId: Number(ej.id),
+      series: ej.seriesObjetivo.map((s, sIdx) => ({
+        orden: s.orden ?? sIdx + 1,
         reps: s.reps,
         peso: s.pesoSugerido,
         completada: false,
-        rir: 2,
+        rir: null,
         esPR: false,
+        comparativaObjetivo: null,
       })),
     }))
   }
@@ -143,13 +167,19 @@ function idCompletadaSerie(ejercicioId: string, serieIdx: number): string {
 }
 
 function normalizarSerie(serie: Partial<SerieReal>): SerieReal {
+  const rawRir = serie.rir as number | null | undefined | string
+  const rirNum =
+    rawRir === undefined || rawRir === null || rawRir === ''
+      ? null
+      : Number(rawRir)
   return {
+    orden: serie.orden,
     reps: Number(serie.reps ?? 0),
     peso: Number(serie.peso ?? 0),
     completada: Boolean(serie.completada),
-    rir: Number.isFinite(serie.rir) ? Number(serie.rir) : 2,
+    rir: Number.isFinite(rirNum) ? rirNum : null,
     esPR: Boolean(serie.esPR),
-    comparativaObjetivo: serie.comparativaObjetivo ?? 'por_debajo',
+    comparativaObjetivo: serie.comparativaObjetivo ?? null,
   }
 }
 
@@ -177,7 +207,7 @@ function validar(): boolean {
         errorValidacion.value = 'Reps y peso deben ser >= 0.'
         return false
       }
-      if (s.rir < 0 || s.rir > 5) {
+      if (s.rir !== null && s.rir !== undefined && (s.rir < 0 || s.rir > 5)) {
         errorValidacion.value = 'El RIR debe estar entre 0 y 5.'
         return false
       }
@@ -194,7 +224,8 @@ async function guardar() {
     fechaISO: new Date().toISOString(),
     rutinaId: viewModelRutinas.rutinaActual.id,
     nombreRutina: viewModelRutinas.rutinaActual.nombre,
-    items: itemsConPR.value,
+    /** Mismos datos que la UI; el API solo serializa reps/peso/rir/orden/completada. */
+    items: items.value,
     notaGeneral: notaGeneral.value.trim() || undefined,
     duracionSegundos: cronometro.duracionSegundos.value,
     descansoSegundosUsado: temporizadorDescanso.duracionSegundos.value,
@@ -229,7 +260,7 @@ async function guardar() {
             {{ cronometro.duracionFormateada }}
           </p>
           <span class="text-xs rounded-full px-2 py-0.5 w-fit"
-            :class="cronometro.estado === 'corriendo' ? 'bg-blue-100 text-blue-800' : cronometro.estado === 'pausado' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'"
+            :class="cronometroEstadoClase"
           >
             {{ estadoCronometroTexto }}
           </span>
@@ -287,13 +318,7 @@ async function guardar() {
               Descanso: <span class="font-semibold">{{ temporizadorDescanso.restanteFormateado }}</span>
             </p>
             <span class="text-xs rounded-full px-2 py-0.5"
-              :class="temporizadorDescanso.estado === 'corriendo'
-                ? 'bg-blue-100 text-blue-800'
-                : temporizadorDescanso.estado === 'pausado'
-                  ? 'bg-amber-100 text-amber-800'
-                  : temporizadorDescanso.estado === 'terminado'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-gray-100 text-gray-700'"
+              :class="descansoEstadoClase"
             >
               {{ estadoDescansoTexto }}
             </span>
@@ -377,15 +402,20 @@ async function guardar() {
             </label>
             <select
               :id="idRirSerie(item.ejercicioId, sIdx)"
-              v-model.number="serie.rir"
+              :value="serie.rir === null || serie.rir === undefined ? '' : String(serie.rir)"
               class="w-full sm:w-20 rounded border border-gray-300 px-2 py-2 text-sm"
+              @change="(e) => {
+                const v = (e.target as HTMLSelectElement).value
+                serie.rir = v === '' ? null : Number(v)
+              }"
             >
-              <option :value="0">RIR 0</option>
-              <option :value="1">RIR 1</option>
-              <option :value="2">RIR 2</option>
-              <option :value="3">RIR 3</option>
-              <option :value="4">RIR 4</option>
-              <option :value="5">RIR 5</option>
+              <option value="">—</option>
+              <option value="0">RIR 0</option>
+              <option value="1">RIR 1</option>
+              <option value="2">RIR 2</option>
+              <option value="3">RIR 3</option>
+              <option value="4">RIR 4</option>
+              <option value="5">RIR 5</option>
             </select>
             <span
               v-if="esSeriePR(item.ejercicioId, sIdx, serie)"
@@ -394,6 +424,7 @@ async function guardar() {
               PR
             </span>
             <span
+              v-if="compararConObjetivo(item.ejercicioId, sIdx, serie) !== null"
               :class="compararConObjetivo(item.ejercicioId, sIdx, serie) === 'superado'
                 ? 'bg-emerald-100 text-emerald-800'
                 : compararConObjetivo(item.ejercicioId, sIdx, serie) === 'cumplido'
