@@ -27,5 +27,10 @@ class EntrenoSerie extends Model
     {
         return $this->belongsTo(EntrenoEjercicio::class);
     }
+
+    public function ejercicio(): BelongsTo
+    {
+        return $this->belongsTo(EntrenoEjercicio::class, 'entreno_ejercicio_id');
+    }
 }
 

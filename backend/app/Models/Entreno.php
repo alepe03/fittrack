@@ -32,5 +32,10 @@ class Entreno extends Model
     {
         return $this->hasMany(EntrenoEjercicio::class);
     }
+
+    public function ejercicios(): HasMany
+    {
+        return $this->hasMany(EntrenoEjercicio::class);
+    }
 }
 
