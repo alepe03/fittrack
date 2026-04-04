@@ -19,7 +19,7 @@ nav:
   - Backend (BD): backend-bd.md
   - Presentación / Guion: presentacion-guion.md
   - Estado actual: estado-actual.md
-  - Despliegue (Docker): despliegue.md
+  - Despliegue (Docker, CI, Pages): despliegue.md
 
 markdown_extensions:
   - admonition

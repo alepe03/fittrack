@@ -1,75 +1,102 @@
-# Despliegue con Docker (FitTrack)
+# Despliegue, Docker y CI/CD (FitTrack)
 
-Este documento describe la arquitectura de contenedores del proyecto FitTrack, cómo se comunican los servicios y los pasos básicos para levantar el entorno. Sirve como justificación técnica en un proyecto de DAW: separación de responsabilidades, puertos explícitos y flujo de peticiones trazable.
+Este documento describe cómo se ejecuta el proyecto en contenedores, cómo fluyen las peticiones entre frontend y API, y qué partes están automatizadas con **GitHub Actions** y **GitHub Pages**. Está pensado para una defensa de proyecto DAW: lo que existe en el repo es lo que se cuenta; lo que no está automatizado se indica explícitamente.
 
-## Arquitectura actual
+## Arquitectura de despliegue local (Docker)
 
-El stack se define en `deploy/docker-compose.yml` y agrupa cuatro servicios con nombres estables en la red interna de Docker:
+El stack para levantar la aplicación completa en local (o en una máquina con Docker) se define en `deploy/docker-compose.yml`. Cuatro servicios con responsabilidades separadas:
 
-| Servicio (Compose)   | Contenedor / rol        | Función |
-|----------------------|-------------------------|---------|
-| **fittrack-postgres** | `fittrack-postgres`     | Base de datos **PostgreSQL** (persistencia en volumen `fittrack_pgdata`). |
-| **fittrack-php**      | `fittrack-php-fpm`      | **Backend Laravel** ejecutado con **PHP-FPM** (procesa la lógica de la API). |
-| **fittrack-nginx**    | `fittrack-nginx`        | **Nginx** del backend: sirve el `public` de Laravel y delega PHP a FPM vía FastCGI. |
-| **fittrack-front**    | `fittrack-front`        | **Frontend Vue** empaquetado y servido con **Nginx** (SPA + proxy hacia la API). |
+| Servicio (Compose) | Contenedor (nombre) | Función |
+|--------------------|---------------------|---------|
+| **fittrack-postgres** | `fittrack-postgres` | Base de datos **PostgreSQL**; datos persistentes en el volumen `fittrack_pgdata`. |
+| **fittrack-php** | `fittrack-php-fpm` | **Backend Laravel** con **PHP-FPM** (lógica de la API). |
+| **fittrack-nginx** | `fittrack-nginx` | **Nginx** del backend: sirve `public/` de Laravel y envía PHP a FPM por **FastCGI**. |
+| **fittrack-front** | `fittrack-front` | **Frontend Vue** construido y servido con **Nginx** (SPA + proxy de `/api/` hacia el backend). |
 
-En conjunto, cada capa tiene una única responsabilidad clara: datos (PostgreSQL), aplicación PHP (FPM), entrada HTTP del API (Nginx backend) y aplicación web (Nginx frontend).
+## Flujo de peticiones (navegador → API → datos)
 
-## Cómo se comunican los servicios
+1. **Navegador → frontend (puerto 8081 en el host, por defecto)**  
+   El usuario abre la SPA; el mapeo apunta al Nginx dentro de `fittrack-front`.
 
-1. **Navegador → frontend (puerto 8081)**  
-   El usuario abre la aplicación Vue en el host. Ese puerto está mapeado al Nginx del contenedor `fittrack-front`.
+2. **Frontend → ruta `/api/` → Nginx del backend**  
+   El Nginx del contenedor frontend **no** sirve esas rutas como ficheros estáticos: las **proxifica** al servicio `fittrack-nginx` en la red Docker. El navegador sigue viendo un solo origen (mismo host/puerto del front), lo que evita en la práctica los problemas habituales de CORS en este despliegue.
 
-2. **Frontend → `/api` → Nginx del backend**  
-   Las peticiones a rutas bajo `/api/` no se resuelven en el build estático: el Nginx del frontend las **proxifica** al servicio `fittrack-nginx` (red interna Docker). Así el navegador sigue viendo el mismo origen para la app y la API bajo `/api`, evitando problemas típicos de CORS en desarrollo y despliegue unificado.
+3. **Nginx (backend) → PHP-FPM**  
+   Laravel se ejecuta vía **FastCGI** hacia el host `fittrack-php` en el puerto **9000** (configuración en `deploy/docker/nginx/default.conf`).
 
-3. **Nginx backend → PHP-FPM (FastCGI)**  
-   El Nginx del backend recibe la petición, enruta según la configuración de Laravel (`try_files` → `index.php`) y las peticiones PHP se envían a **FastCGI** al host `fittrack-php` en el puerto **9000** (estándar de PHP-FPM en contenedor).
-
-4. **PHP → PostgreSQL**  
-   Laravel usa la variable de entorno `DB_HOST=fittrack-postgres` (nombre del servicio en Compose) para conectar al motor **PostgreSQL** en el puerto interno **5432**.
+4. **PHP (Laravel) → PostgreSQL**  
+   La aplicación usa `DB_HOST=fittrack-postgres` (nombre del servicio en Compose) y el puerto interno **5432**.
 
 ### Diagrama del flujo (texto)
 
 ```
-navegador → frontend (Nginx, :8081) → /api → nginx (backend) → php-fpm (Laravel) → postgres
+navegador → frontend (Nginx, :8081) → /api/ → nginx (backend) → php-fpm (Laravel) → PostgreSQL
 ```
 
-En la práctica: una petición a la API desde el navegador entra por el frontend, el proxy reenvía al Nginx del API, este ejecuta Laravel vía FPM y Laravel consulta o actualiza PostgreSQL.
+## Docker Compose: comandos habituales
 
-## Comandos de despliegue
+El fichero Compose está en la carpeta **`deploy/`**.
 
-El fichero Compose está en la carpeta **`deploy`**. Desde la raíz del repositorio:
+Desde la **raíz del repositorio**:
 
 ```bash
 docker compose -f deploy/docker-compose.yml build
 docker compose -f deploy/docker-compose.yml up -d
 ```
 
-Si ya te encuentras dentro de `deploy/`:
+Desde **`deploy/`**:
 
 ```bash
 docker compose build
 docker compose up -d
 ```
 
-Tras el arranque, los contenedores quedan en segundo plano (`-d`). Para ver logs: `docker compose -f deploy/docker-compose.yml logs -f` (o el equivalente desde `deploy/`).
+Para ver logs: `docker compose -f deploy/docker-compose.yml logs -f` (o el equivalente si el contexto es `deploy/`).
 
-## Puertos en el host
+## Puertos por defecto en el host
 
-| Servicio   | Puerto por defecto | Descripción |
-|------------|--------------------|-------------|
-| Frontend   | **8081**           | Aplicación Vue (mapeo `FRONT_HTTP_PORT`, por defecto 8081). |
-| Backend API | **8080**        | Nginx que expone Laravel (mapeo `HTTP_PORT`, por defecto 8080). |
+| Qué | Puerto (defecto) | Variable en Compose (ejemplo) |
+|-----|------------------|-------------------------------|
+| Frontend (Vue) | **8081** | `FRONT_HTTP_PORT` |
+| API (Nginx + Laravel) | **8080** | `HTTP_PORT` |
+| PostgreSQL (opcional, herramientas externas) | **5432** | `POSTGRES_PORT` |
 
-PostgreSQL puede exponerse en el host (por defecto **5432**, configurable con `POSTGRES_PORT`) para herramientas externas; la aplicación dentro de Docker usa siempre el nombre de servicio `fittrack-postgres`.
+Dentro de la red Docker, los servicios se resuelven por **nombre** (`fittrack-postgres`, `fittrack-nginx`, etc.), no hace falta usar la IP del host.
 
-## Ventajas de este enfoque
+## GitHub Actions: integración continua (CI)
 
-- **Entorno reproducible**: cualquier máquina con Docker obtiene las mismas versiones de servicios y la misma topología de red.
-- **Sin dependencias locales obligatorias**: no hace falta instalar PHP, Composer, Node, PostgreSQL ni Nginx en el sistema anfitrión para ejecutar el proyecto completo.
-- **Preparado para producción**: la separación Nginx + PHP-FPM + base de datos es un patrón habitual en despliegues reales; el mismo tipo de capas se puede trasladar a un servidor o orquestador con ajustes de variables y secretos.
+En `.github/workflows/ci.yml` hay un workflow de **CI** que se ejecuta en **push** y **pull request** hacia las ramas **`main`** y **`develop`**, y también se puede lanzar a mano (`workflow_dispatch`).
 
-## Nota sobre CI/CD
+Incluye tres jobs en paralelo:
 
-Este despliegue **no incluye pipeline de CI/CD** (build automático en push, tests en cada merge, despliegue continuo a un servidor, etc.). Sí deja la **base preparada**: imágenes construibles, servicios nombrados y documentación del flujo, de modo que integrar GitHub Actions, GitLab CI u otro sistema sea un paso posterior acotado.
+| Job | Qué valida |
+|-----|------------|
+| **Frontend (Vue)** | En `front/`: `npm ci` y `npm run build` (typecheck con `vue-tsc` y build de Vite). |
+| **Backend (Laravel)** | En `backend/`: PHP **8.4**, `composer install`, copia de `.env` desde `.env.example`, generación de `APP_KEY`, y `composer test` (tests con SQLite en memoria según `phpunit.xml`). |
+| **Documentación (MkDocs)** | Instala dependencias desde `docs/requirements.txt`, ajusta `site_url` para la URL típica de GitHub Pages y ejecuta `mkdocs build --strict`. |
+
+Este CI **no despliega** la aplicación Docker ni el frontend compilado a ningún servidor: solo **comprueba** que el repositorio construye y que los tests del backend pasan.
+
+## GitHub Pages: publicación de la documentación
+
+La documentación MkDocs se publica con el workflow `.github/workflows/docs-pages.yml`, que usa el flujo recomendado por GitHub (**Actions** como fuente de Pages: artefacto + `deploy-pages`).
+
+- **Cuándo se ejecuta:** en **push** a la rama **`main`** si cambian rutas relevantes (`docs/**`, `mkdocs.yml`, `docs/requirements.txt` o el propio workflow), o de forma manual (`workflow_dispatch`).
+- **Qué se publica:** el sitio estático generado por MkDocs (tema Material), no la SPA ni el backend.
+
+La URL pública suele seguir el patrón de proyecto en GitHub Pages: `https://<usuario u organización>.github.io/<nombre-del-repo>/` (el workflow sustituye el marcador de `site_url` en CI para que enlaces y recursos cuadren con esa base).
+
+## Qué está automatizado y qué no
+
+| Automatizado | No automatizado (en este proyecto) |
+|--------------|-----------------------------------|
+| CI en cada push/PR a `main` o `develop`: build frontend, tests backend, build estricto de docs. | Despliegue automático del **stack Docker** (Vue + Laravel + Postgres) a un VPS, PaaS o registro de imágenes. |
+| Publicación automática de la **documentación MkDocs** en GitHub Pages al subir cambios a `main` (según el filtro de rutas). | Pipeline que construya imágenes Docker y las publique, o que ejecute `docker compose` en remoto. |
+
+En resumen: **sí** hay CI reproducible y **sí** hay despliegue continuo de la **documentación**; **no** hay CD de la aplicación completa a un entorno de producción remoto: eso queda como paso manual (por ejemplo `docker compose` en una máquina propia) o como evolución futura del proyecto.
+
+## Ventajas del enfoque Docker local
+
+- **Entorno reproducible** entre desarrolladores y máquinas de práctica.
+- **Menos dependencias en el anfitrión**: no es obligatorio instalar PHP, Composer, Node, PostgreSQL o Nginx en el sistema solo para ejecutar el stack completo.
+- **Alineado con patrones de producción**: Nginx delante, PHP-FPM y base de datos separados facilitan razonar sobre un despliegue real más adelante.
