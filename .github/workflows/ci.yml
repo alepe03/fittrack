@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend (Vue)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: front
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: front/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Typecheck y build de producción
+        run: npm run build
+
+  backend:
+    name: Backend (Laravel)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: mbstring, xml, ctype, curl, sqlite, pdo_sqlite
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: ${{ runner.os }}-composer-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Entorno Laravel (.env y APP_KEY)
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Tests (PHPUnit vía artisan)
+        run: composer test
+
+  docs:
+    name: Documentación (MkDocs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - name: Instalar MkDocs Material
+        run: pip install -r docs/requirements.txt
+
+      - name: Ajustar site_url para GitHub Pages (misma lógica que el despliegue)
+        run: |
+          SITE_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          sed -i "s|https://__GITHUB_PAGES_BASE_URL__/|${SITE_URL}|g" mkdocs.yml
+
+      - name: Build estricto (enlaces y sintaxis)
+        run: mkdocs build --strict
