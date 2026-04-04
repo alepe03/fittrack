@@ -54,8 +54,14 @@ Este documento sirve como “hoja de ruta honesta” para la entrega y defensa: 
   - cascada en “plantilla”
   - `set null` en IDs del histórico cuando se pierde un elemento de la plantilla.
 
+## Despliegue (Docker + Nginx)
+- **Stack en `deploy/`:** `docker-compose.yml` con PostgreSQL, PHP-FPM (Laravel), Nginx del API y Nginx del frontend (Vue).
+- **Puertos habituales en el host:** frontend **8081**, API **8080** (configurables con variables de entorno del Compose).
+- **Flujo de peticiones:** el navegador usa el frontend; las rutas `/api/` se proxifican al Nginx del backend, que habla con PHP-FPM y este con PostgreSQL (detalle en `docs/despliegue.md`).
+- **CI/CD:** no hay pipeline automatizado todavía; el despliegue documentado deja la base lista para añadirlo después.
+
 ## Criterios no cubiertos completamente (honestidad del alcance)
-- **DSW / DPL (despliegue, NGINX, Docker, CI-CD):** no hay artefactos de despliegue (Docker/Compose/NGINX/CI-CD) en el repo en este momento; se deja como plan/fase futura.
+- **DSW / DPL:** despliegue con **Docker Compose** y **Nginx** está en el repo y documentado; **CI/CD** (build/test/deploy automático) sigue sin implementarse.
 - **SSG (gestión de usuarios/clientes y paneles):** actualmente existe autenticación simulada en frontend y no hay gestión real de usuarios en backend protegida por auth.
 - **SOJ e IPW (impacto/ODS y aspectos de mercado/sostenibilidad/marketing):** no están desarrollados ni documentados en el repo; se deja estructura para completar en una fase posterior si aplica en la entrega.
 
