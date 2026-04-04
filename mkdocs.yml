@@ -1,6 +1,8 @@
 site_name: FitTrack Docs
 site_description: Documentación oficial del proyecto FitTrack
 site_author: Alejandro
+# En GitHub Actions se sustituye por la URL real del repositorio en Pages.
+site_url: https://__GITHUB_PAGES_BASE_URL__/
 theme:
   name: material
 
@@ -17,6 +19,7 @@ nav:
   - Backend (BD): backend-bd.md
   - Presentación / Guion: presentacion-guion.md
   - Estado actual: estado-actual.md
+  - Despliegue (Docker): despliegue.md
 
 markdown_extensions:
   - admonition

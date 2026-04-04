@@ -1,0 +1,2 @@
+# MkDocs + tema Material (build de documentación en CI y GitHub Pages)
+mkdocs-material>=9.5,<10
