@@ -19,8 +19,9 @@ Demostrar un producto funcional y defendible con una arquitectura moderna:
 En este repositorio encontrarás:
 - `front/`: SPA Vue (módulos por funcionalidades).
 - `backend/`: API Laravel.
-- `docs/`: documentación del proyecto (MkDocs).
-- `deploy/`: configuración/guías previstas (puede estar incompleta según la fase).
+- `docs/`: documentación del proyecto (MkDocs), publicable en **GitHub Pages** mediante GitHub Actions.
+- `deploy/`: Docker Compose, Dockerfiles y configuración Nginx para levantar PostgreSQL, Laravel (PHP-FPM), API y frontend en contenedores.
+- `.github/workflows/`: integración continua (build frontend, tests backend, validación MkDocs) y despliegue de la documentación a Pages.
 
 ## Índice de la documentación
 - `arquitectura.md`: arquitectura real y estado de integración actual.
@@ -34,3 +35,4 @@ En este repositorio encontrarás:
 - `backend-bd.md`: base de datos (modelo, cascadas y diseño de histórico).
 - `presentacion-guion.md`: guía breve para presentación/defensa.
 - `estado-actual.md`: hoja de estado honesta (implementado / parcial / futuro).
+- `despliegue.md`: Docker Compose, flujo de peticiones, GitHub Actions (CI) y GitHub Pages (documentación); qué está automatizado y qué no.

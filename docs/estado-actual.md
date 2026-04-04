@@ -54,15 +54,15 @@ Este documento sirve como “hoja de ruta honesta” para la entrega y defensa: 
   - cascada en “plantilla”
   - `set null` en IDs del histórico cuando se pierde un elemento de la plantilla.
 
-## Despliegue (Docker + Nginx)
-- **Stack en `deploy/`:** `docker-compose.yml` con PostgreSQL, PHP-FPM (Laravel), Nginx del API y Nginx del frontend (Vue).
-- **Puertos habituales en el host:** frontend **8081**, API **8080** (configurables con variables de entorno del Compose).
-- **Flujo de peticiones:** el navegador usa el frontend; las rutas `/api/` se proxifican al Nginx del backend, que habla con PHP-FPM y este con PostgreSQL (detalle en `docs/despliegue.md`).
-- **CI (GitHub Actions):** en `.github/workflows/ci.yml` se validan frontend (Vue), backend (Laravel/tests) y build de MkDocs en cada push/PR a `main` o `develop`.
-- **Documentación en GitHub Pages:** workflow `.github/workflows/docs-pages.yml` publica el sitio generado por MkDocs (sin despliegue automático de la app Docker a un servidor; eso sigue siendo manual o fase futura).
+## Despliegue (Docker + CI + Pages)
+- **Stack en `deploy/`:** `docker-compose.yml` con PostgreSQL, PHP-FPM (Laravel), Nginx del API y Nginx del frontend (Vue). Detalle de servicios, puertos y flujo en `docs/despliegue.md`.
+- **Puertos habituales en el host:** frontend **8081**, API **8080** (variables `FRONT_HTTP_PORT` y `HTTP_PORT` en Compose).
+- **Flujo de peticiones:** navegador → frontend → `/api/` → Nginx backend → PHP-FPM → PostgreSQL.
+- **CI (GitHub Actions):** `.github/workflows/ci.yml` en push/PR a **`main`** y **`develop`**: build del frontend (`npm run build`), tests del backend (PHP **8.4**, `composer test` con SQLite en memoria) y `mkdocs build --strict`. No publica la aplicación en ningún servidor.
+- **GitHub Pages:** `.github/workflows/docs-pages.yml` publica solo la **documentación MkDocs**; se dispara en push a **`main`** cuando cambian `docs/`, `mkdocs.yml`, `docs/requirements.txt` o ese workflow (y admite ejecución manual). No sustituye al despliegue Docker de la app.
 
 ## Criterios no cubiertos completamente (honestidad del alcance)
-- **DSW / DPL:** **Docker Compose + Nginx** documentado; **CI** con Actions para código y docs; **Pages** para la documentación MkDocs. No hay despliegue automático del stack de aplicación (Vue/Laravel) a un entorno de producción remoto.
+- **DSW / DPL:** Docker Compose + Nginx operativos en el repo; CI en Actions; documentación en Pages. **No** hay despliegue automático del stack de aplicación (imágenes/contenedores Vue+Laravel) a un servidor remoto de producción.
 - **SSG (gestión de usuarios/clientes y paneles):** actualmente existe autenticación simulada en frontend y no hay gestión real de usuarios en backend protegida por auth.
 - **SOJ e IPW (impacto/ODS y aspectos de mercado/sostenibilidad/marketing):** no están desarrollados ni documentados en el repo; se deja estructura para completar en una fase posterior si aplica en la entrega.
 

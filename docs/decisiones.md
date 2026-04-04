@@ -51,6 +51,18 @@ Además, se usan composables para persistencias (localStorage/sessionStorage) y 
 
 Frontend, backend, documentación y configuración de despliegue se mantienen en el mismo repositorio para simplificar el desarrollo y el despliegue.
 
+## Docker (Compose + Nginx + PHP-FPM)
+
+Se eligió un stack de **cuatro servicios** (PostgreSQL, PHP-FPM, Nginx del API, Nginx del frontend) definido en `deploy/docker-compose.yml` para poder levantar la aplicación sin instalar el stack completo en el sistema anfitrión. El frontend proxifica `/api/` hacia el Nginx del backend para unificar origen en el navegador y acercar el entorno a un despliegue por capas (web → aplicación → datos).
+
+## CI con GitHub Actions
+
+Se añadió un workflow de **integración continua** (`.github/workflows/ci.yml`) que valida en cada cambio relevante en `main`/`develop` que el frontend compila, que los tests del backend pasan y que la documentación MkDocs construye en modo estricto. La motivación es detectar regresiones de forma automática y ofrecer una prueba objetiva de calidad en la entrega, sin confundir CI con despliegue de la app.
+
+## Documentación en GitHub Pages
+
+La documentación del proyecto se genera con **MkDocs (Material)** y se publica con **GitHub Actions** hacia **GitHub Pages** (workflow dedicado, distinto del CI de la app). Solo el sitio estático de docs se despliega automáticamente en `main` según el criterio de rutas del workflow; la aplicación Vue/Laravel en Docker **no** se publica así automáticamente a un hosting remoto.
+
 ## Diseño de interfaces (DOR)
 
 ### Framework CSS y línea visual
