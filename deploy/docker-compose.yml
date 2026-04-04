@@ -1,0 +1,63 @@
+name: fittrack
+
+services:
+  fittrack-postgres:
+    image: postgres:16-alpine
+    container_name: fittrack-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fittrack}
+      POSTGRES_USER: ${POSTGRES_USER:-fittrack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fittrack}
+    volumes:
+      - fittrack_pgdata:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fittrack} -d ${POSTGRES_DB:-fittrack}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  fittrack-php:
+    build:
+      context: ..
+      dockerfile: deploy/docker/backend/Dockerfile
+    container_name: fittrack-php-fpm
+    volumes:
+      - ../backend:/var/www/html
+    env_file:
+      - ../backend/.env
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: fittrack-postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-fittrack}
+      DB_USERNAME: ${POSTGRES_USER:-fittrack}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-fittrack}
+    depends_on:
+      fittrack-postgres:
+        condition: service_healthy
+
+  fittrack-nginx:
+    image: nginx:1.27-alpine
+    container_name: fittrack-nginx
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+    volumes:
+      - ../backend:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - fittrack-php
+
+  fittrack-front:
+    build:
+      context: ..
+      dockerfile: deploy/docker/front/Dockerfile
+    container_name: fittrack-front
+    ports:
+      - "${FRONT_HTTP_PORT:-8081}:80"
+    depends_on:
+      - fittrack-nginx
+
+volumes:
+  fittrack_pgdata:
