@@ -6,10 +6,14 @@ Este documento describe cómo se ejecuta el proyecto en contenedores, cómo fluy
 
 El stack para levantar la aplicación completa en local (o en una máquina con Docker) se define en `deploy/docker-compose.yml`. Cuatro servicios con responsabilidades separadas:
 
-| Servicio (Compose) | Contenedor (nombre) | Función |
-|--------------------|---------------------|---------|
+**Nota:** no se declaran `container_name` fijos en el compose base. Así cada `docker compose -p <proyecto>` puede coexistir sin choque de nombres en el host; el descubrimiento entre contenedores usa el **nombre del servicio** en la red del proyecto (p. ej. `fittrack-php`, `fittrack-nginx`).
+
+**Puertos al host y fusión de Compose:** al combinar varios ficheros, Docker Compose **concatena** las listas `ports` de cada servicio. Por eso el `docker-compose.yml` base **no** define `ports` en Postgres, Nginx ni front: los mapeos por defecto (`5432`, `8080`, `8081`) viven en `deploy/docker-compose.host-ports.yml`. Así el override de **staging** solo añade `15432`, `18080` y `18081`, sin acumular también `8080`/`8081`/`5432`.
+
+| Servicio (Compose) | Nombre DNS interno | Función |
+|--------------------|--------------------|---------|
 | **fittrack-postgres** | `fittrack-postgres` | Base de datos **PostgreSQL**; datos persistentes en el volumen `fittrack_pgdata`. |
-| **fittrack-php** | `fittrack-php-fpm` | **Backend Laravel** con **PHP-FPM** (lógica de la API). |
+| **fittrack-php** | `fittrack-php` | **Backend Laravel** con **PHP-FPM** (lógica de la API). |
 | **fittrack-nginx** | `fittrack-nginx` | **Nginx** del backend: sirve `public/` de Laravel y envía PHP a FPM por **FastCGI**. |
 | **fittrack-front** | `fittrack-front` | **Frontend Vue** construido y servido con **Nginx** (SPA + proxy de `/api/` hacia el backend). |
 
@@ -37,21 +41,80 @@ navegador → frontend (Nginx, :8081) → /api/ → nginx (backend) → php-fpm 
 
 El fichero Compose está en la carpeta **`deploy/`**.
 
-Desde la **raíz del repositorio**:
+Desde la **raíz del repositorio**, con puertos típicos en el host (tras `./deploy/scripts/setup-env.sh`):
 
 ```bash
-docker compose -f deploy/docker-compose.yml build
-docker compose -f deploy/docker-compose.yml up -d
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.host-ports.yml build
+docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.host-ports.yml up -d
 ```
 
-Desde **`deploy/`**:
+Desde **`deploy/`** (añadiendo `-f docker-compose.host-ports.yml` igual que arriba si necesitas publicar puertos).
+
+Para ver logs: `docker compose -f deploy/docker-compose.yml -f deploy/docker-compose.host-ports.yml logs -f` (o el equivalente según los `-f` que uses).
+
+## Entornos diferenciados: staging y production
+
+El repositorio define dos overrides reales sobre el compose base:
+
+- `deploy/docker-compose.staging.yml`
+- `deploy/docker-compose.prod.yml`
+
+Ambos se aplican junto a `deploy/docker-compose.yml`.
+
+Usa siempre un **nombre de proyecto** distinto por entorno (`-p fittrack-staging`, `-p fittrack-prod`, …) para aislar contenedores, redes y volúmenes; al no forzar `container_name`, no habrá colisiones entre proyectos.
+
+### Ficheros `.env` del backend (sin pasos manuales obligatorios)
+
+Docker Compose exige que existan los ficheros listados en `env_file`. Para no tener que copiar a mano las plantillas en el primer arranque, el repo incluye `deploy/scripts/setup-env.sh`, que:
+
+- crea `backend/.env.staging` desde `backend/.env.staging.example` si no existe;
+- crea `backend/.env.production` desde `backend/.env.production.example` si no existe;
+- crea `backend/.env` desde `backend/.env.example` si no existe (útil para el stack base);
+- genera **`APP_KEY`** (vía `openssl rand -base64`, prefijo `base64:`) en `backend/.env`, `backend/.env.staging` y `backend/.env.production` **solo cuando `APP_KEY` está vacía**, para que Laravel no lance `MissingAppKeyException`.
+
+Si ya tienes esos ficheros (por ejemplo con valores propios), el script **no** los sobrescribe; si ya hay `APP_KEY` definida, no la cambia.
+
+Ejecución desde la raíz del repo:
 
 ```bash
-docker compose build
-docker compose up -d
+./deploy/scripts/setup-env.sh
 ```
 
-Para ver logs: `docker compose -f deploy/docker-compose.yml logs -f` (o el equivalente si el contexto es `deploy/`).
+(Si no tienes permisos de ejecución: `bash deploy/scripts/setup-env.sh`.)
+
+### Comandos exactos por entorno
+
+Levantar **staging** (recomendado encadenar el script):
+
+```bash
+./deploy/scripts/setup-env.sh && docker compose \
+  -f deploy/docker-compose.yml \
+  -f deploy/docker-compose.staging.yml \
+  -p fittrack-staging \
+  up -d --build
+```
+
+Levantar **production**:
+
+```bash
+./deploy/scripts/setup-env.sh && docker compose \
+  -f deploy/docker-compose.yml \
+  -f deploy/docker-compose.prod.yml \
+  -p fittrack-prod \
+  up -d --build
+```
+
+### Diferencias defendibles entre entornos
+
+| Aspecto | Staging | Production |
+|---------|---------|------------|
+| `APP_ENV` | `staging` | `production` |
+| `APP_DEBUG` | `true` | `false` |
+| Nginx API host | `18080` | `8080` |
+| Frontend host | `18081` | `8081` |
+| PostgreSQL host | `15432` expuesto | No expuesto al host (`ports: []`) |
+| Restart policy | `unless-stopped` | `unless-stopped` |
+| `.env` del backend | `backend/.env.staging` | `backend/.env.production` |
 
 ## Puertos por defecto en el host
 
@@ -77,6 +140,18 @@ Incluye tres jobs en paralelo:
 
 Este CI **no despliega** la aplicación Docker ni el frontend compilado a ningún servidor: solo **comprueba** que el repositorio construye y que los tests del backend pasan.
 
+## GitHub Actions: build/push de imágenes Docker (sin deploy remoto)
+
+En `.github/workflows/docker-images.yml` hay un workflow mínimo para construir y publicar imágenes en **GHCR**:
+
+- **Cuándo se ejecuta:** `push` a `main` y ejecución manual (`workflow_dispatch`).
+- **Qué publica:** dos imágenes:
+  - backend desde `deploy/docker/backend/Dockerfile`
+  - frontend desde `deploy/docker/front/Dockerfile`
+- **Tags:** `latest` y `${{ github.sha }}`.
+
+Este workflow **no** hace despliegue remoto automático; solo genera artefactos de despliegue (imágenes versionadas).
+
 ## GitHub Pages: publicación de la documentación
 
 La documentación MkDocs se publica con el workflow `.github/workflows/docs-pages.yml`, que usa el flujo recomendado por GitHub (**Actions** como fuente de Pages: artefacto + `deploy-pages`).
@@ -90,10 +165,11 @@ La URL pública suele seguir el patrón de proyecto en GitHub Pages: `https://<u
 
 | Automatizado | No automatizado (en este proyecto) |
 |--------------|-----------------------------------|
-| CI en cada push/PR a `main` o `develop`: build frontend, tests backend, build estricto de docs. | Despliegue automático del **stack Docker** (Vue + Laravel + Postgres) a un VPS, PaaS o registro de imágenes. |
-| Publicación automática de la **documentación MkDocs** en GitHub Pages al subir cambios a `main` (según el filtro de rutas). | Pipeline que construya imágenes Docker y las publique, o que ejecute `docker compose` en remoto. |
+| CI en cada push/PR a `main` o `develop`: build frontend, tests backend, build estricto de docs. | Despliegue remoto extremo a extremo del stack (arrancar/actualizar contenedores en un servidor). |
+| Publicación automática de la **documentación MkDocs** en GitHub Pages al subir cambios a `main` (según el filtro de rutas). | Promoción automática entre entornos (staging -> producción). |
+| Build y push de imágenes Docker a GHCR en `main` (`docker-images.yml`). | Orquestación remota automatizada con Kamal/Portainer/Podman. |
 
-En resumen: **sí** hay CI reproducible y **sí** hay despliegue continuo de la **documentación**; **no** hay CD de la aplicación completa a un entorno de producción remoto: eso queda como paso manual (por ejemplo `docker compose` en una máquina propia) o como evolución futura del proyecto.
+En resumen: **sí** hay CI reproducible, **sí** hay CD de la documentación y **sí** hay publicación automática de imágenes Docker; **no** hay despliegue remoto completo automatizado de la aplicación (ese paso sigue siendo manual en una máquina/servidor propio).
 
 ## Ventajas del enfoque Docker local
 
