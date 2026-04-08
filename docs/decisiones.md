@@ -55,9 +55,33 @@ Frontend, backend, documentación y configuración de despliegue se mantienen en
 
 Se eligió un stack de **cuatro servicios** (PostgreSQL, PHP-FPM, Nginx del API, Nginx del frontend) definido en `deploy/docker-compose.yml` para poder levantar la aplicación sin instalar el stack completo en el sistema anfitrión. El frontend proxifica `/api/` hacia el Nginx del backend para unificar origen en el navegador y acercar el entorno a un despliegue por capas (web → aplicación → datos).
 
+## Docker Compose en lugar de Kubernetes
+
+Para este proyecto DAW se prioriza simplicidad operativa y trazabilidad: Docker Compose cubre los requisitos de despliegue sin introducir complejidad de orquestación avanzada (Kubernetes) que no aporta valor proporcional en este alcance académico.
+
+## Separación staging / production
+
+Se usan overrides dedicados (`deploy/docker-compose.staging.yml` y `deploy/docker-compose.prod.yml`) para separar entornos con diferencias defendibles de puertos y variables de aplicación (`APP_ENV`, `APP_DEBUG`), manteniendo la misma arquitectura base.
+
+## Eliminación de `container_name` fijo
+
+Se retiraron `container_name` del compose base para evitar conflictos al ejecutar múltiples proyectos Compose (`-p fittrack-staging`, `-p fittrack-prod`) en la misma máquina. La resolución interna sigue basada en nombres de servicio.
+
+## Script `setup-env.sh` para robustez de arranque
+
+Se añadió `deploy/scripts/setup-env.sh` para crear automáticamente `.env` faltantes y generar `APP_KEY` cuando está vacía. Así se evitan fallos de `env_file` y `MissingAppKeyException` sin pasos manuales frágiles.
+
+## Portainer para gestión visual
+
+La decisión práctica es mantener Docker Compose como fuente de verdad del despliegue y usar Portainer solo como capa de gestión visual de stacks/containers/logs cuando se necesite operación manual. No se ha añadido automatización específica de Portainer en el repositorio.
+
 ## CI con GitHub Actions
 
 Se añadió un workflow de **integración continua** (`.github/workflows/ci.yml`) que valida en cada cambio relevante en `main`/`develop` que el frontend compila, que los tests del backend pasan y que la documentación MkDocs construye en modo estricto. La motivación es detectar regresiones de forma automática y ofrecer una prueba objetiva de calidad en la entrega, sin confundir CI con despliegue de la app.
+
+## CI/CD en contexto académico
+
+Se implementa CI completo (build/tests/docs), despliegue continuo de documentación (GitHub Pages) y publicación de imágenes Docker (GHCR), pero no CD automático de extremo a extremo de la aplicación en servidor remoto. Esta frontera se mantiene de forma consciente por alcance del proyecto y control manual del despliegue final.
 
 ## Documentación en GitHub Pages
 

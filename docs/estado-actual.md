@@ -66,3 +66,12 @@ Este documento sirve como “hoja de ruta honesta” para la entrega y defensa: 
 - **SSG (gestión de usuarios/clientes y paneles):** actualmente existe autenticación simulada en frontend y no hay gestión real de usuarios en backend protegida por auth.
 - **SOJ e IPW (impacto/ODS y aspectos de mercado/sostenibilidad/marketing):** no están desarrollados ni documentados en el repo; se deja estructura para completar en una fase posterior si aplica en la entrega.
 
+## Despliegue final
+
+- **Staging operativo:** frontend en `18081`, API en `18080`, PostgreSQL en `15432` usando `deploy/docker-compose.staging.yml`.
+- **Production operativo:** frontend en `8081`, API en `8080`, PostgreSQL sin puerto expuesto al host usando `deploy/docker-compose.prod.yml`.
+- **Arranque y gestion de contenedores:** realizado con Docker Compose (`docker compose -f ...`).
+- **Portainer:** los stacks creados por Compose son gestionables visualmente desde Portainer; el repositorio no incluye configuracion automatizada especifica de Portainer.
+- **CI:** GitHub Actions valida frontend, backend y documentacion.
+- **Publicacion de documentacion:** GitHub Pages con workflow dedicado.
+

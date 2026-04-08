@@ -1,48 +1,47 @@
 # FitTrack
 
-FitTrack es una aplicación web para el seguimiento de rutinas de gimnasio, entrenamientos y progreso físico.
+FitTrack es una aplicación web para el seguimiento de rutinas de gimnasio, entrenamientos y progreso físico, con frontend SPA y backend API desplegables en contenedores.
 
-## Tecnologías principales
+## Tecnologías utilizadas
 
-### Frontend
-- Vue 3
-- TypeScript
-- Vite
-- Vue Router
-- Pinia
-- Composition API
+- Frontend: Vue 3, TypeScript, Vite, Vue Router, Pinia
+- Backend: Laravel (PHP)
+- Base de datos: PostgreSQL
+- Despliegue: Docker, Docker Compose, NGINX, PHP-FPM
+- Documentación: MkDocs + GitHub Pages
 
-### Backend
-- PHP
-- Laravel
-- API REST
+## Arquitectura general
 
-### Despliegue
-- Docker
-- Docker Compose
-- NGINX
+El proyecto se ejecuta con cuatro servicios Docker:
 
-### Documentación
-- MkDocs
-- GitHub Pages
+- `fittrack-front`: frontend Vue servido por NGINX
+- `fittrack-nginx`: NGINX de backend (entrada a Laravel)
+- `fittrack-php`: PHP-FPM con Laravel
+- `fittrack-postgres`: base de datos PostgreSQL
 
-## Primer arranque rápido (Docker)
+Flujo: frontend -> nginx backend -> php-fpm -> postgres.
 
-Desde la **raíz del repositorio**, `./deploy/scripts/setup-env.sh`:
+## Instrucciones de arranque
 
-- crea `backend/.env`, `backend/.env.staging` y `backend/.env.production` desde los `.example` si faltan (no sobrescribe si ya existen);
-- rellena **`APP_KEY`** con `openssl` (formato `base64:…`) en esos tres ficheros **solo si `APP_KEY` está vacía**, para evitar `MissingAppKeyException` en Laravel.
+### Desarrollo
 
-**Desarrollo local** (API `8080`, front `8081`, Postgres `5432` en el host). El compose base no publica puertos; se añaden con `deploy/docker-compose.host-ports.yml` para no duplicar mapeos al usar staging/prod:
+Frontend:
 
 ```bash
-./deploy/scripts/setup-env.sh && docker compose \
-  -f deploy/docker-compose.yml \
-  -f deploy/docker-compose.host-ports.yml \
-  up -d --build
+cd front
+npm install
+npm run dev
 ```
 
-**Staging** (solo `18080` / `18081` / `15432` en el host, sin 8080/8081/5432 duplicados):
+Backend:
+
+```bash
+cd backend
+composer install
+php artisan serve
+```
+
+### Staging (Docker)
 
 ```bash
 ./deploy/scripts/setup-env.sh && docker compose \
@@ -52,7 +51,7 @@ Desde la **raíz del repositorio**, `./deploy/scripts/setup-env.sh`:
   up -d --build
 ```
 
-**Production** (API en `8080`, front en `8081`, Postgres sin puerto público en el host):
+### Produccion (Docker)
 
 ```bash
 ./deploy/scripts/setup-env.sh && docker compose \
@@ -62,77 +61,21 @@ Desde la **raíz del repositorio**, `./deploy/scripts/setup-env.sh`:
   up -d --build
 ```
 
-## Entornos de despliegue (Docker Compose)
+## Puertos
 
-En `deploy/docker-compose.yml` **no** se usan `container_name` fijos: así cada proyecto Compose (`-p fittrack-staging`, `-p fittrack-prod`, etc.) genera nombres de contenedor únicos y puedes tener staging y production levantados a la vez sin conflictos. La comunicación entre servicios sigue usando los **nombres de servicio** (`fittrack-php`, `fittrack-nginx`, …), que es lo que resuelve la red interna de Docker.
+- Staging: frontend `18081`, API `18080`, PostgreSQL `15432`
+- Production: frontend `8081`, API `8080` (PostgreSQL sin puerto publicado al host)
 
-El stack base está en `deploy/docker-compose.yml`. Los puertos al host para desarrollo local van en `deploy/docker-compose.host-ports.yml`. Los entornos usan overrides:
-- `deploy/docker-compose.staging.yml`
-- `deploy/docker-compose.prod.yml`
+## Entornos: staging vs production
 
-Antes de `docker compose`, ejecuta `./deploy/scripts/setup-env.sh` (o `bash deploy/scripts/setup-env.sh`).
+- **Staging**: entorno de validacion con puertos diferenciados y `APP_ENV=staging`.
+- **Production**: entorno orientado a ejecucion estable, `APP_ENV=production`, `APP_DEBUG=false` y sin exponer PostgreSQL al host.
 
-### Levantar desarrollo local (puertos por defecto)
+`deploy/scripts/setup-env.sh` prepara `.env` faltantes y genera `APP_KEY` si esta vacia, evitando errores de arranque en Laravel.
 
-```bash
-./deploy/scripts/setup-env.sh
-docker compose \
-  -f deploy/docker-compose.yml \
-  -f deploy/docker-compose.host-ports.yml \
-  up -d --build
-```
+## CI/CD (estado real)
 
-### Levantar staging
-
-```bash
-./deploy/scripts/setup-env.sh
-docker compose \
-  -f deploy/docker-compose.yml \
-  -f deploy/docker-compose.staging.yml \
-  -p fittrack-staging \
-  up -d --build
-```
-
-### Levantar production
-
-```bash
-./deploy/scripts/setup-env.sh
-docker compose \
-  -f deploy/docker-compose.yml \
-  -f deploy/docker-compose.prod.yml \
-  -p fittrack-prod \
-  up -d --build
-```
-
-## CI/CD actual (honesto)
-
-- **CI de aplicación:** `.github/workflows/ci.yml` (build frontend, tests backend y validación de docs).
-- **CD de documentación:** `.github/workflows/docs-pages.yml` publica MkDocs en GitHub Pages.
-- **Build/push de imágenes Docker:** `.github/workflows/docker-images.yml` publica imágenes de backend/frontend en GHCR.
-- **No automatizado:** despliegue remoto extremo a extremo del stack completo de la app.
-
-## Documentación
-
-La documentación del proyecto se gestiona con MkDocs.
-
-Para servirla en local:
-
-```bash
-mkdocs serve
-```
-
-Para generar el sitio estático:
-
-```bash
-mkdocs build
-```
-
-## Estructura del proyecto
-
-```text
-fittrack/
-  front/
-  backend/
-  docs/
-  deploy/
-```
+- CI de aplicacion: `.github/workflows/ci.yml` (build frontend, tests backend, validacion docs).
+- CD de documentacion: `.github/workflows/docs-pages.yml` (GitHub Pages).
+- Build/push de imagenes Docker: `.github/workflows/docker-images.yml` (GHCR).
+- No hay despliegue remoto automatico completo del stack de aplicacion.
