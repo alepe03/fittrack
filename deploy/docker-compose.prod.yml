@@ -1,0 +1,22 @@
+services:
+  fittrack-postgres:
+    ports: []
+    restart: unless-stopped
+
+  fittrack-php:
+    env_file:
+      - ../backend/.env.production
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+    restart: unless-stopped
+
+  fittrack-nginx:
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  fittrack-front:
+    ports:
+      - "8081:80"
+    restart: unless-stopped

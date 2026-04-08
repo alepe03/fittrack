@@ -1,0 +1,15 @@
+# Publica puertos en el host para desarrollo local (8080 API, 8081 front, 5432 Postgres).
+# Compose concatena listas `ports` al fusionar ficheros; por eso los puertos por defecto
+# están aquí y no en docker-compose.yml, para que staging/prod no dupliquen mapeos.
+services:
+  fittrack-postgres:
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+
+  fittrack-nginx:
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+
+  fittrack-front:
+    ports:
+      - "${FRONT_HTTP_PORT:-8081}:80"
