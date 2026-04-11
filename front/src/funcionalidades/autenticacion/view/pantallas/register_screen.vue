@@ -7,12 +7,17 @@ import BotonPrimario from '@/compartido/ui/BotonPrimario.vue'
 const router = useRouter()
 const viewModel = useAutenticacionViewModel()
 
-const form = reactive({ email: '', password: '' })
+const form = reactive({
+  name: '',
+  email: '',
+  password: '',
+  password_confirmation: '',
+})
 const enviado = ref(false)
 
 async function enviar() {
   enviado.value = true
-  const ok = await viewModel.login({ email: form.email, password: form.password })
+  const ok = await viewModel.register({ ...form })
   if (ok) {
     router.push('/rutinas')
   }
@@ -22,10 +27,21 @@ async function enviar() {
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
     <div class="w-full max-w-md rounded-xl bg-white shadow-lg p-5 sm:p-6">
-      <h1 class="text-2xl font-bold text-gray-800 mb-4">Iniciar sesión</h1>
-      <p class="text-sm text-gray-600 mb-4">Accede para gestionar tus rutinas y entrenos.</p>
+      <h1 class="text-2xl font-bold text-gray-800 mb-4">Crear cuenta</h1>
+      <p class="text-sm text-gray-600 mb-4">Regístrate para guardar rutinas y entrenos en tu cuenta.</p>
 
       <form @submit.prevent="enviar" class="space-y-4">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+          <input
+            id="name"
+            v-model="form.name"
+            type="text"
+            required
+            autocomplete="name"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
         <div>
           <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
           <input
@@ -44,7 +60,22 @@ async function enviar() {
             v-model="form.password"
             type="password"
             required
-            autocomplete="current-password"
+            minlength="8"
+            autocomplete="new-password"
+            class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+          <p class="text-xs text-gray-500 mt-1">Mínimo 8 caracteres.</p>
+        </div>
+        <div>
+          <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1"
+            >Confirmar contraseña</label
+          >
+          <input
+            id="password_confirmation"
+            v-model="form.password_confirmation"
+            type="password"
+            required
+            autocomplete="new-password"
             class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
@@ -52,13 +83,13 @@ async function enviar() {
           {{ viewModel.error }}
         </p>
         <BotonPrimario type="submit" :disabled="viewModel.cargando" class="w-full min-h-11">
-          {{ viewModel.cargando ? 'Entrando...' : 'Entrar' }}
+          {{ viewModel.cargando ? 'Creando cuenta...' : 'Registrarse' }}
         </BotonPrimario>
       </form>
 
       <p class="mt-5 text-sm text-center text-gray-600">
-        ¿No tienes cuenta?
-        <RouterLink to="/registro" class="text-blue-600 hover:text-blue-800 font-medium">Crear cuenta</RouterLink>
+        ¿Ya tienes cuenta?
+        <RouterLink to="/login" class="text-blue-600 hover:text-blue-800 font-medium">Iniciar sesión</RouterLink>
       </p>
     </div>
   </div>

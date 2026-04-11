@@ -1,5 +1,5 @@
 /**
- * Repositorio de rutinas: delega en rutinas_api (mock).
+ * Repositorio de rutinas: delega en rutinas_api (API Laravel autenticada).
  * El borrado en cascada lo hace el backend (FKs con cascade).
  */
 import * as rutinasApi from './rutinas_api'

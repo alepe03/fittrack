@@ -12,6 +12,7 @@ class RutinaController extends Controller
     public function index()
     {
         $rutinas = Rutina::query()
+            ->where('user_id', auth()->id())
             ->withCount(['rutinaEjercicios as ejercicios_count'])
             ->orderByDesc('created_at')
             ->get([
@@ -38,8 +39,8 @@ class RutinaController extends Controller
 
     public function show(int $id)
     {
-        $rutina = $this->loadRutinaComplete($id);
-        if (!$rutina) {
+        $rutina = $this->loadRutinaCompleteParaUsuario($id);
+        if (! $rutina) {
             return response()->json(['message' => 'Rutina no encontrada'], 404);
         }
 
@@ -50,9 +51,9 @@ class RutinaController extends Controller
     {
         $data = $request->validate($this->rules());
 
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($data, $request) {
             $rutina = Rutina::create([
-                'user_id' => $data['user_id'],
+                'user_id' => $request->user()->id,
                 'nombre' => $data['nombre'],
                 'descripcion' => $data['descripcion'] ?? null,
             ]);
@@ -72,7 +73,7 @@ class RutinaController extends Controller
                 }
             }
 
-            $rutina = $this->loadRutinaComplete($rutina->id);
+            $rutina = $this->loadRutinaCompleteParaUsuario($rutina->id);
 
             return response()->json($this->formatRutinaComplete($rutina), 201);
         });
@@ -80,8 +81,10 @@ class RutinaController extends Controller
 
     public function update(Request $request, int $id)
     {
-        $rutina = Rutina::find($id);
-        if (!$rutina) {
+        $rutina = Rutina::query()
+            ->where('user_id', $request->user()->id)
+            ->find($id);
+        if (! $rutina) {
             return response()->json(['message' => 'Rutina no encontrada'], 404);
         }
 
@@ -89,7 +92,6 @@ class RutinaController extends Controller
 
         return DB::transaction(function () use ($rutina, $data) {
             $rutina->update([
-                'user_id' => $data['user_id'],
                 'nombre' => $data['nombre'],
                 'descripcion' => $data['descripcion'] ?? null,
             ]);
@@ -112,16 +114,18 @@ class RutinaController extends Controller
                 }
             }
 
-            $rutina = $this->loadRutinaComplete($rutina->id);
+            $rutina = $this->loadRutinaCompleteParaUsuario($rutina->id);
 
             return response()->json($this->formatRutinaComplete($rutina), 200);
         });
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
-        $rutina = Rutina::find($id);
-        if (!$rutina) {
+        $rutina = Rutina::query()
+            ->where('user_id', $request->user()->id)
+            ->find($id);
+        if (! $rutina) {
             return response()->json(['message' => 'Rutina no encontrada'], 404);
         }
 
@@ -132,15 +136,15 @@ class RutinaController extends Controller
 
     public function duplicar(Request $request, int $id)
     {
-        $original = $this->loadRutinaComplete($id);
-        if (!$original) {
+        $original = $this->loadRutinaCompleteParaUsuario($id);
+        if (! $original) {
             return response()->json(['message' => 'Rutina no encontrada'], 404);
         }
 
         return DB::transaction(function () use ($original) {
             $nuevaRutina = Rutina::create([
                 'user_id' => $original->user_id,
-                'nombre' => $original->nombre . ' (copia)',
+                'nombre' => $original->nombre.' (copia)',
                 'descripcion' => $original->descripcion,
             ]);
 
@@ -159,7 +163,7 @@ class RutinaController extends Controller
                 }
             }
 
-            $nuevaRutina = $this->loadRutinaComplete($nuevaRutina->id);
+            $nuevaRutina = $this->loadRutinaCompleteParaUsuario($nuevaRutina->id);
 
             return response()->json($this->formatRutinaComplete($nuevaRutina), 201);
         });
@@ -168,7 +172,6 @@ class RutinaController extends Controller
     private function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer', 'exists:users,id'],
             'nombre' => ['required', 'string', 'max:255'],
             'descripcion' => ['nullable', 'string'],
             'ejercicios' => ['required', 'array', 'min:1'],
@@ -181,17 +184,20 @@ class RutinaController extends Controller
         ];
     }
 
-    private function loadRutinaComplete(int $id): ?Rutina
+    private function loadRutinaCompleteParaUsuario(int $id): ?Rutina
     {
-        return Rutina::with([
-            'rutinaEjercicios' => function ($query) {
-                $query->orderBy('orden')->with([
-                    'rutinaSeries' => function ($seriesQuery) {
-                        $seriesQuery->orderBy('orden');
-                    },
-                ]);
-            },
-        ])->find($id);
+        return Rutina::query()
+            ->where('user_id', auth()->id())
+            ->with([
+                'rutinaEjercicios' => function ($query) {
+                    $query->orderBy('orden')->with([
+                        'rutinaSeries' => function ($seriesQuery) {
+                            $seriesQuery->orderBy('orden');
+                        },
+                    ]);
+                },
+            ])
+            ->find($id);
     }
 
     private function formatRutinaComplete(Rutina $rutina): array
@@ -227,4 +233,3 @@ class RutinaController extends Controller
         ];
     }
 }
-

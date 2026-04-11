@@ -12,14 +12,18 @@ class DatabaseSeeder extends Seeder
 
     /**
      * Seed the application's database.
+     *
+     * Usuario de desarrollo (Sanctum / login real). Ejecutar: php artisan db:seed
+     * La contraseña en claro la hashea el cast "hashed" del modelo User.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'dev@fittrack.local'],
+            [
+                'name' => 'Usuario desarrollo',
+                'password' => 'password',
+            ]
+        );
     }
 }

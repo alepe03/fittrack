@@ -6,18 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Entreno;
 use App\Models\EntrenoEjercicio;
 use App\Models\EntrenoSerie;
+use App\Models\Rutina;
 use App\Models\RutinaSerie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class EntrenoController extends Controller
 {
     /**
      * Listado ligero (sin ejercicios/series): la UI del histórico solo necesita cabecera del entreno.
      */
-    public function index()
+    public function index(Request $request)
     {
         $entrenos = Entreno::query()
+            ->where('user_id', $request->user()->id)
             ->orderByDesc('fecha_entreno')
             ->orderByDesc('id')
             ->get([
@@ -39,7 +42,10 @@ class EntrenoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'rutina_id' => ['nullable', 'exists:rutinas,id'],
+            'rutina_id' => [
+                'nullable',
+                Rule::exists('rutinas', 'id')->where('user_id', $request->user()->id),
+            ],
             'nombre_rutina' => ['required', 'string'],
             'fecha_entreno' => ['required', 'date'],
             'nota_general' => ['nullable', 'string'],
@@ -48,7 +54,14 @@ class EntrenoController extends Controller
             'ejercicios' => ['required', 'array'],
             'ejercicios.*.nombre' => ['required', 'string'],
             'ejercicios.*.orden' => ['required', 'integer'],
-            'ejercicios.*.rutina_ejercicio_id' => ['nullable', 'exists:rutina_ejercicios,id'],
+            'ejercicios.*.rutina_ejercicio_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('rutina_ejercicios', 'id')->whereIn(
+                    'rutina_id',
+                    Rutina::query()->where('user_id', $request->user()->id)->select('id')
+                ),
+            ],
             'ejercicios.*.series' => ['required', 'array'],
             'ejercicios.*.series.*.orden' => ['required', 'integer'],
             'ejercicios.*.series.*.reps' => ['required', 'integer'],
@@ -59,7 +72,7 @@ class EntrenoController extends Controller
 
         return DB::transaction(function () use ($request) {
             $entreno = Entreno::create([
-                'user_id' => auth()->id() ?? 1,
+                'user_id' => $request->user()->id,
                 'rutina_id' => $request->rutina_id,
                 'nombre_rutina' => $request->nombre_rutina,
                 'fecha_entreno' => $request->fecha_entreno,
@@ -117,17 +130,20 @@ class EntrenoController extends Controller
         });
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $entreno = Entreno::with([
-            'ejercicios' => function ($query) {
-                $query->orderBy('orden')->with([
-                    'series' => function ($subQuery) {
-                        $subQuery->orderBy('orden');
-                    },
-                ]);
-            },
-        ])->find($id);
+        $entreno = Entreno::query()
+            ->where('user_id', $request->user()->id)
+            ->with([
+                'ejercicios' => function ($query) {
+                    $query->orderBy('orden')->with([
+                        'series' => function ($subQuery) {
+                            $subQuery->orderBy('orden');
+                        },
+                    ]);
+                },
+            ])
+            ->find($id);
 
         if (! $entreno) {
             return response()->json([
@@ -212,6 +228,7 @@ class EntrenoController extends Controller
         $existsBetter = DB::table('entreno_series')
             ->join('entreno_ejercicios', 'entreno_series.entreno_ejercicio_id', '=', 'entreno_ejercicios.id')
             ->join('entrenos', 'entreno_ejercicios.entreno_id', '=', 'entrenos.id')
+            ->where('entrenos.user_id', auth()->id())
             // Solo comparar contra entrenos anteriores para evitar inconsistencias.
             // Usar '<' en lugar de '!=' asegura un histórico temporal correcto (no mezcla entrenos posteriores ni el propio).
             ->where('entrenos.id', '<', $entrenoId)

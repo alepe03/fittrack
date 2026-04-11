@@ -4,8 +4,7 @@
  */
 import type { Rutina, RutinaEjercicio, SerieObjetivo } from '../model/entidades'
 import { clienteApi } from '@/nucleo/red/cliente_api'
-
-const USER_ID_FIJO = 1
+import { extraerMensajesRespuestaError } from '@/nucleo/red/extraer_mensajes_error'
 
 function parseFechaIsoToMillis(fechaIso: unknown): number | undefined {
   if (!fechaIso) return undefined
@@ -77,15 +76,6 @@ function mapEjerciciosParaApi(ejercicios: RutinaEjercicio[]): any[] {
   })
 }
 
-function extraerMensajeError(error: unknown): string {
-  if (typeof error === 'object' && error) {
-    const anyErr = error as any
-    if (anyErr?.response?.data?.message) return String(anyErr.response.data.message)
-    if (anyErr?.message) return String(anyErr.message)
-  }
-  return 'Error en la operación'
-}
-
 export async function listarRutinas(): Promise<Rutina[]> {
   const resp = await clienteApi.get('/rutinas')
   if (import.meta.env.DEV) {
@@ -94,7 +84,7 @@ export async function listarRutinas(): Promise<Rutina[]> {
   }
 
   if (!Array.isArray(resp.data)) {
-    throw new Error('Respuesta inválida en GET /rutinas: se esperaba un array JSON.')
+    throw new Error('La respuesta del listado de rutinas no es válida.')
   }
 
   return resp.data.map(mapRutinaListadoDesdeApi)
@@ -107,20 +97,23 @@ export async function obtenerRutinaPorId(id: string): Promise<Rutina | null> {
   } catch (error: unknown) {
     const anyErr = error as any
     if (anyErr?.response?.status === 404) return null
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
 export async function crearRutina(rutina: Omit<Rutina, 'id'>): Promise<Rutina> {
   const payload = {
-    user_id: USER_ID_FIJO,
     nombre: rutina.nombre,
     descripcion: rutina.descripcion ?? null,
     ejercicios: mapEjerciciosParaApi(rutina.ejercicios ?? []),
   }
 
-  const resp = await clienteApi.post('/rutinas', payload)
-  return mapRutinaCompletaDesdeApi(resp.data)
+  try {
+    const resp = await clienteApi.post('/rutinas', payload)
+    return mapRutinaCompletaDesdeApi(resp.data)
+  } catch (error: unknown) {
+    throw new Error(extraerMensajesRespuestaError(error))
+  }
 }
 
 export async function actualizarRutina(id: string, datos: Partial<Rutina>): Promise<Rutina | null> {
@@ -129,7 +122,6 @@ export async function actualizarRutina(id: string, datos: Partial<Rutina>): Prom
   if (!datos.nombre || !datos.ejercicios) return null
 
   const payload = {
-    user_id: USER_ID_FIJO,
     nombre: datos.nombre,
     descripcion: datos.descripcion ?? null,
     ejercicios: mapEjerciciosParaApi(datos.ejercicios),
@@ -141,7 +133,7 @@ export async function actualizarRutina(id: string, datos: Partial<Rutina>): Prom
   } catch (error: unknown) {
     const anyErr = error as any
     if (anyErr?.response?.status === 404) return null
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
@@ -157,7 +149,7 @@ export async function eliminarRutina(id: string): Promise<boolean> {
   } catch (error: unknown) {
     const anyErr = error as any
     if (anyErr?.response?.status === 404) return false
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
@@ -168,6 +160,6 @@ export async function duplicarRutina(idOrigen: string): Promise<Rutina | null> {
   } catch (error: unknown) {
     const anyErr = error as any
     if (anyErr?.response?.status === 404) return null
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }

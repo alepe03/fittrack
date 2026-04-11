@@ -5,7 +5,7 @@ import AppLayout from '@/compartido/ui/AppLayout.vue'
 
 const route = useRoute()
 
-const usarLayout = computed(() => route.path !== '/login')
+const usarLayout = computed(() => route.path !== '/login' && route.path !== '/registro')
 </script>
 
 <template>
