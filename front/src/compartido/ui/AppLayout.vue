@@ -5,8 +5,8 @@ import { useAutenticacionViewModel } from '@/funcionalidades/autenticacion/viewm
 const router = useRouter()
 const viewModelAuth = useAutenticacionViewModel()
 
-function salir() {
-  viewModelAuth.logout()
+async function salir() {
+  await viewModelAuth.logout()
   router.push('/login')
 }
 </script>

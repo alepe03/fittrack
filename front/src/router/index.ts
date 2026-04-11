@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { obtenerToken } from '@/nucleo/almacenamiento/storage'
+import { useAutenticacionViewModel } from '@/funcionalidades/autenticacion/viewmodel/autenticacion_viewmodel'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -8,6 +9,12 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: () => import('@/funcionalidades/autenticacion/view/pantallas/login_screen.vue'),
+      meta: { publica: true },
+    },
+    {
+      path: '/registro',
+      name: 'register',
+      component: () => import('@/funcionalidades/autenticacion/view/pantallas/register_screen.vue'),
       meta: { publica: true },
     },
     {
@@ -54,17 +61,36 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
+  const auth = useAutenticacionViewModel()
   const token = obtenerToken()
+
   if (to.meta.publica) {
+    if (token && (to.name === 'login' || to.name === 'register')) {
+      try {
+        await auth.asegurarSesion()
+        next({ path: '/rutinas' })
+        return
+      } catch {
+        auth.limpiarSesionLocal()
+      }
+    }
     next()
     return
   }
+
   if (!token) {
-    next('/login')
+    next({ path: '/login' })
     return
   }
-  next()
+
+  try {
+    await auth.asegurarSesion()
+    next()
+  } catch {
+    auth.limpiarSesionLocal()
+    next({ path: '/login' })
+  }
 })
 
 export default router

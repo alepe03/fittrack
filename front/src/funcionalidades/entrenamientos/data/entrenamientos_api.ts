@@ -3,6 +3,7 @@
  */
 import type { Entreno, SerieReal } from '../model/entidades'
 import { clienteApi } from '@/nucleo/red/cliente_api'
+import { extraerMensajesRespuestaError } from '@/nucleo/red/extraer_mensajes_error'
 
 const CLAVE_STORAGE = 'gym_entrenos'
 
@@ -24,18 +25,6 @@ function guardarEnStorage(entrenos: Entreno[]): void {
 }
 
 let entrenos: Entreno[] = cargarDesdeStorage()
-
-function extraerMensajeError(error: unknown): string {
-  if (typeof error === 'object' && error) {
-    const anyErr = error as any
-    if (anyErr?.response?.data?.message) return String(anyErr.response.data.message)
-    if (typeof anyErr?.response?.data === 'object' && anyErr.response.data?.errors) {
-      return JSON.stringify(anyErr.response.data.errors)
-    }
-    if (anyErr?.message) return String(anyErr.message)
-  }
-  return 'Error en la operación'
-}
 
 /** Payload snake_case para POST /api/entrenos */
 function construirPayloadApi(datos: Omit<Entreno, 'id'>): Record<string, unknown> {
@@ -111,7 +100,7 @@ export async function listarEntrenos(): Promise<Entreno[]> {
     const resp = await clienteApi.get('/entrenos')
     console.log('[entrenamientos_api] GET /entrenos respuesta', resp.status, resp.data)
     if (!Array.isArray(resp.data)) {
-      throw new Error('GET /entrenos: se esperaba un array JSON.')
+      throw new Error('La respuesta del listado de entrenos no es válida.')
     }
     return resp.data.map((row: any) => mapEntrenoDesdeApi(row))
   } catch (error: unknown) {
@@ -121,7 +110,7 @@ export async function listarEntrenos(): Promise<Entreno[]> {
       console.warn('[entrenamientos_api] GET /entrenos: usando fallback localStorage')
       return [...entrenos].sort((a, b) => (b.fechaISO > a.fechaISO ? 1 : -1))
     }
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
@@ -137,7 +126,7 @@ export async function obtenerEntrenoPorId(id: string): Promise<Entreno | null> {
       return entrenos.find((e) => e.id === id) ?? null
     }
     console.error('[entrenamientos_api] GET /entrenos/:id error', error)
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
@@ -151,7 +140,7 @@ export async function crearEntreno(datos: Omit<Entreno, 'id'>): Promise<Entreno>
 
     const entrenoId = resp.data?.entreno_id
     if (entrenoId == null) {
-      throw new Error('Respuesta del servidor sin entreno_id')
+      throw new Error('La respuesta del servidor no incluye el identificador del entreno.')
     }
 
     const showResp = await clienteApi.get(`/entrenos/${entrenoId}`)
@@ -161,7 +150,7 @@ export async function crearEntreno(datos: Omit<Entreno, 'id'>): Promise<Entreno>
     return entreno
   } catch (error: unknown) {
     console.error('[entrenamientos_api] POST /entrenos error', error)
-    throw new Error(extraerMensajeError(error))
+    throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 

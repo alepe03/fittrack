@@ -1,6 +1,5 @@
 /**
- * Cliente HTTP configurado para la API real (futuro).
- * De momento no se usa; los repositorios consumen datos mock.
+ * Cliente HTTP para la API Laravel (Sanctum Bearer en rutas protegidas).
  */
 import axios from 'axios'
 
@@ -12,7 +11,7 @@ export const clienteApi = axios.create({
   },
 })
 
-// Interceptor para añadir token cuando exista API real
+// Bearer Sanctum cuando hay token en localStorage
 clienteApi.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
