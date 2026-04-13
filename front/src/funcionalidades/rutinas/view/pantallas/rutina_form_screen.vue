@@ -111,7 +111,7 @@ async function guardar() {
       {{ esEdicion ? 'Editar rutina' : 'Nueva rutina' }}
     </h1>
 
-    <div class="rounded-xl bg-white shadow p-4 sm:p-6 space-y-6">
+    <form class="rounded-xl bg-white shadow p-4 sm:p-6 space-y-6" @submit.prevent="guardar">
       <div>
         <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la rutina *</label>
         <input
@@ -218,7 +218,7 @@ async function guardar() {
       <p v-if="viewModel.error" class="text-red-600 text-sm" role="alert">{{ viewModel.error }}</p>
 
       <div class="flex flex-col sm:flex-row gap-3 pt-2">
-        <BotonPrimario class="w-full sm:w-auto" :disabled="viewModel.cargando" @click="guardar">
+        <BotonPrimario type="submit" class="w-full sm:w-auto" :disabled="viewModel.cargando">
           {{ viewModel.cargando ? 'Guardando...' : 'Guardar rutina' }}
         </BotonPrimario>
         <button
@@ -229,6 +229,6 @@ async function guardar() {
           Cancelar
         </button>
       </div>
-    </div>
+    </form>
   </div>
 </template>

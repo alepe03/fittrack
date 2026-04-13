@@ -48,7 +48,7 @@ async function confirmarDuplicar() {
       {{ viewModel.error }}
     </p>
     <template v-else-if="viewModel.rutinaActual">
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6">
         <h1 class="text-2xl font-bold text-gray-800">{{ viewModel.rutinaActual.nombre }}</h1>
         <div class="flex flex-wrap gap-2">
           <button

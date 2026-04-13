@@ -22,13 +22,6 @@ function objetivoSerie(
   return ejercicio.seriesObjetivo[serieIdx] ?? null
 }
 
-/** Solo para borrador / entreno aún no guardado: heurística local frente a la rutina. */
-function calcularPRBorrador(serie: SerieReal, objetivo: SerieObjetivo | null): boolean {
-  if (!serie.completada || !objetivo) return false
-  if (serie.peso > objetivo.pesoSugerido) return true
-  return serie.peso === objetivo.pesoSugerido && serie.reps > objetivo.reps
-}
-
 function calcularComparativaObjetivo(
   serie: SerieReal,
   objetivo: SerieObjetivo | null
@@ -45,17 +38,18 @@ function calcularComparativaObjetivo(
 
 /**
  * @param prDesdeServidor Si true (p. ej. edición de entreno cargado desde API), PR solo con `serie.esPR` del backend.
+ * Si false (borrador en curso), no se muestra PR real hasta guardar.
  */
 export function useMetricasEntreno(
   items: Ref<EntrenoItem[]>,
   rutinaActual: Ref<Rutina | null>,
   prDesdeServidor: Ref<boolean> = ref(false),
 ) {
-  function esSeriePR(ejercicioId: string, serieIdx: number, serie: SerieReal): boolean {
+  function esSeriePR(_ejercicioId: string, _serieIdx: number, serie: SerieReal): boolean {
     if (prDesdeServidor.value) {
       return serie.esPR === true
     }
-    return calcularPRBorrador(serie, objetivoSerie(rutinaActual.value, ejercicioId, serieIdx))
+    return false
   }
 
   function compararConObjetivo(

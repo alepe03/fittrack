@@ -158,26 +158,47 @@ function idPesoSerie(ejercicioId: string, serieIdx: number): string {
   return `entreno-${ejercicioId}-serie-${serieIdx}-peso`
 }
 
-function idRirSerie(ejercicioId: string, serieIdx: number): string {
-  return `entreno-${ejercicioId}-serie-${serieIdx}-rir`
+function idRpeSerie(ejercicioId: string, serieIdx: number): string {
+  return `entreno-${ejercicioId}-serie-${serieIdx}-rpe`
 }
 
 function idCompletadaSerie(ejercicioId: string, serieIdx: number): string {
   return `entreno-${ejercicioId}-serie-${serieIdx}-completada`
 }
 
+function calcularRirDesdeRpe(rpe: number | null | undefined): number | null {
+  if (rpe === null || rpe === undefined || !Number.isFinite(rpe)) return null
+  if (rpe < 5 || rpe > 10) return null
+  return 10 - rpe
+}
+
+function calcularRpeDesdeRir(rir: number | null | undefined): number | null {
+  if (rir === null || rir === undefined || !Number.isFinite(rir)) return null
+  if (rir < 0 || rir > 5) return null
+  return 10 - rir
+}
+
 function normalizarSerie(serie: Partial<SerieReal>): SerieReal {
+  const rawRpe = serie.rpe as number | null | undefined | string
+  const rpeNum =
+    rawRpe === undefined || rawRpe === null || rawRpe === ''
+      ? null
+      : Number(rawRpe)
   const rawRir = serie.rir as number | null | undefined | string
   const rirNum =
     rawRir === undefined || rawRir === null || rawRir === ''
       ? null
       : Number(rawRir)
+  const rpeNormalizado = Number.isFinite(rpeNum) ? rpeNum : null
+  const rirNormalizado = Number.isFinite(rirNum) ? rirNum : null
+  const rpeDerivado = rpeNormalizado ?? calcularRpeDesdeRir(rirNormalizado)
   return {
     orden: serie.orden,
     reps: Number(serie.reps ?? 0),
     peso: Number(serie.peso ?? 0),
     completada: Boolean(serie.completada),
-    rir: Number.isFinite(rirNum) ? rirNum : null,
+    rpe: rpeDerivado,
+    rir: rpeDerivado !== null ? calcularRirDesdeRpe(rpeDerivado) : rirNormalizado,
     esPR: Boolean(serie.esPR),
     comparativaObjetivo: serie.comparativaObjetivo ?? null,
   }
@@ -209,6 +230,10 @@ function validar(): boolean {
       }
       if (s.rir !== null && s.rir !== undefined && (s.rir < 0 || s.rir > 5)) {
         errorValidacion.value = 'El RIR debe estar entre 0 y 5.'
+        return false
+      }
+      if (s.rpe !== null && s.rpe !== undefined && (s.rpe < 5 || s.rpe > 10)) {
+        errorValidacion.value = 'El RPE debe estar entre 5 y 10.'
         return false
       }
     }
@@ -249,9 +274,13 @@ async function guardar() {
 
     <p v-if="viewModelRutinas.cargando" class="text-gray-600">Cargando rutina...</p>
     <p v-else-if="!viewModelRutinas.rutinaActual" class="text-red-600">{{ mensajeNoDisponible }}</p>
-    <div v-else class="rounded-xl bg-white shadow p-4 sm:p-6 space-y-6">
+    <form v-else class="rounded-xl bg-white shadow p-4 sm:p-6 space-y-6" @submit.prevent="guardar">
       <p class="text-xs text-gray-500">
-        Introduce reps, peso y RIR por serie. Marca las series completadas para ver progreso y posibles PR.
+        Introduce reps, peso y RPE por serie. El RIR se calcula automáticamente.
+        Marca las series completadas para ver progreso y posibles PR.
+      </p>
+      <p class="text-xs text-gray-500 -mt-4">
+        El PR se confirma al guardar el entreno.
       </p>
       <section class="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-4">
         <h2 class="text-base font-semibold text-blue-900">Cronómetro general de sesión</h2>
@@ -397,25 +426,26 @@ async function guardar() {
               placeholder="Kg"
             />
             <span class="text-sm text-gray-500">kg</span>
-            <label :for="idRirSerie(item.ejercicioId, sIdx)" class="sr-only">
-              RIR, {{ item.nombre }}, serie {{ sIdx + 1 }}
+            <label :for="idRpeSerie(item.ejercicioId, sIdx)" class="sr-only">
+              RPE, {{ item.nombre }}, serie {{ sIdx + 1 }}
             </label>
             <select
-              :id="idRirSerie(item.ejercicioId, sIdx)"
-              :value="serie.rir === null || serie.rir === undefined ? '' : String(serie.rir)"
+              :id="idRpeSerie(item.ejercicioId, sIdx)"
+              :value="serie.rpe === null || serie.rpe === undefined ? '' : String(serie.rpe)"
               class="w-full sm:w-20 rounded border border-gray-300 px-2 py-2 text-sm"
               @change="(e) => {
                 const v = (e.target as HTMLSelectElement).value
-                serie.rir = v === '' ? null : Number(v)
+                serie.rpe = v === '' ? null : Number(v)
+                serie.rir = calcularRirDesdeRpe(serie.rpe)
               }"
             >
               <option value="">—</option>
-              <option value="0">RIR 0</option>
-              <option value="1">RIR 1</option>
-              <option value="2">RIR 2</option>
-              <option value="3">RIR 3</option>
-              <option value="4">RIR 4</option>
-              <option value="5">RIR 5</option>
+              <option value="5">RPE 5</option>
+              <option value="6">RPE 6</option>
+              <option value="7">RPE 7</option>
+              <option value="8">RPE 8</option>
+              <option value="9">RPE 9</option>
+              <option value="10">RPE 10</option>
             </select>
             <span
               v-if="esSeriePR(item.ejercicioId, sIdx, serie)"
@@ -473,7 +503,7 @@ async function guardar() {
       </p>
 
       <div class="flex flex-col sm:flex-row gap-3">
-        <BotonPrimario class="w-full sm:w-auto" :disabled="viewModelEntrenos.cargando" @click="guardar">
+        <BotonPrimario type="submit" class="w-full sm:w-auto" :disabled="viewModelEntrenos.cargando">
           {{ viewModelEntrenos.cargando ? 'Guardando...' : (esEdicion ? 'Guardar cambios' : 'Guardar entreno') }}
         </BotonPrimario>
         <button
@@ -484,6 +514,6 @@ async function guardar() {
           Cancelar
         </button>
       </div>
-    </div>
+    </form>
   </div>
 </template>

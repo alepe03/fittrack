@@ -41,34 +41,7 @@ class EntrenoController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'rutina_id' => [
-                'nullable',
-                Rule::exists('rutinas', 'id')->where('user_id', $request->user()->id),
-            ],
-            'nombre_rutina' => ['required', 'string'],
-            'fecha_entreno' => ['required', 'date'],
-            'nota_general' => ['nullable', 'string'],
-            'duracion_segundos' => ['nullable', 'integer'],
-            'descanso_segundos_usado' => ['nullable', 'integer'],
-            'ejercicios' => ['required', 'array'],
-            'ejercicios.*.nombre' => ['required', 'string'],
-            'ejercicios.*.orden' => ['required', 'integer'],
-            'ejercicios.*.rutina_ejercicio_id' => [
-                'nullable',
-                'integer',
-                Rule::exists('rutina_ejercicios', 'id')->whereIn(
-                    'rutina_id',
-                    Rutina::query()->where('user_id', $request->user()->id)->select('id')
-                ),
-            ],
-            'ejercicios.*.series' => ['required', 'array'],
-            'ejercicios.*.series.*.orden' => ['required', 'integer'],
-            'ejercicios.*.series.*.reps' => ['required', 'integer'],
-            'ejercicios.*.series.*.peso' => ['required', 'numeric'],
-            'ejercicios.*.series.*.rir' => ['nullable', 'integer'],
-            'ejercicios.*.series.*.completada' => ['required', 'boolean'],
-        ]);
+        $request->validate($this->validationRules($request));
 
         return DB::transaction(function () use ($request) {
             $entreno = Entreno::create([
@@ -81,53 +54,66 @@ class EntrenoController extends Controller
                 'descanso_segundos_usado' => $request->descanso_segundos_usado,
             ]);
 
-            foreach ($request->ejercicios as $ejercicioData) {
-                $entrenoEjercicio = EntrenoEjercicio::create([
-                    'entreno_id' => $entreno->id,
-                    'rutina_ejercicio_id' => $ejercicioData['rutina_ejercicio_id'] ?? null,
-                    'nombre' => $ejercicioData['nombre'],
-                    'orden' => $ejercicioData['orden'],
-                ]);
-
-                foreach ($ejercicioData['series'] as $serieData) {
-                    $rutinaEjId = $entrenoEjercicio->rutina_ejercicio_id !== null
-                        ? (int) $entrenoEjercicio->rutina_ejercicio_id
-                        : null;
-
-                    $comparativa = $this->calcularComparativaObjetivo(
-                        $rutinaEjId,
-                        (int) $serieData['orden'],
-                        (int) $serieData['reps'],
-                        (float) $serieData['peso'],
-                    );
-
-                    $esPr = $this->calcularEsPr(
-                        (int) $entreno->id,
-                        $rutinaEjId,
-                        (string) $ejercicioData['nombre'],
-                        (int) $serieData['reps'],
-                        (float) $serieData['peso'],
-                        (bool) $serieData['completada'],
-                    );
-
-                    EntrenoSerie::create([
-                        'entreno_ejercicio_id' => $entrenoEjercicio->id,
-                        'orden' => $serieData['orden'],
-                        'reps' => $serieData['reps'],
-                        'peso' => $serieData['peso'],
-                        'rir' => $serieData['rir'] ?? null,
-                        'completada' => $serieData['completada'],
-                        'es_pr' => $esPr,
-                        'comparativa_objetivo' => $comparativa,
-                    ]);
-                }
-            }
+            $this->reemplazarEjerciciosDesdePayload($entreno, $request->ejercicios);
 
             return response()->json([
                 'message' => 'Entreno guardado correctamente',
                 'entreno_id' => $entreno->id,
             ], 201);
         });
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate($this->validationRules($request));
+
+        $entreno = Entreno::query()
+            ->where('user_id', $request->user()->id)
+            ->find($id);
+
+        if (! $entreno) {
+            return response()->json([
+                'message' => 'Entreno no encontrado',
+            ], 404);
+        }
+
+        return DB::transaction(function () use ($request, $entreno) {
+            $entreno->update([
+                'rutina_id' => $request->rutina_id,
+                'nombre_rutina' => $request->nombre_rutina,
+                'fecha_entreno' => $request->fecha_entreno,
+                'nota_general' => $request->nota_general,
+                'duracion_segundos' => $request->duracion_segundos,
+                'descanso_segundos_usado' => $request->descanso_segundos_usado,
+            ]);
+
+            $entreno->ejercicios()->delete();
+            $this->reemplazarEjerciciosDesdePayload($entreno, $request->ejercicios);
+
+            return response()->json([
+                'message' => 'Entreno actualizado correctamente',
+                'entreno_id' => $entreno->id,
+            ]);
+        });
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $entreno = Entreno::query()
+            ->where('user_id', $request->user()->id)
+            ->find($id);
+
+        if (! $entreno) {
+            return response()->json([
+                'message' => 'Entreno no encontrado',
+            ], 404);
+        }
+
+        $entreno->delete();
+
+        return response()->json([
+            'message' => 'Entreno eliminado correctamente',
+        ]);
     }
 
     public function show(Request $request, $id)
@@ -250,5 +236,82 @@ class EntrenoController extends Controller
             ->exists();
 
         return ! $existsBetter;
+    }
+
+    private function validationRules(Request $request): array
+    {
+        return [
+            'rutina_id' => [
+                'nullable',
+                Rule::exists('rutinas', 'id')->where('user_id', $request->user()->id),
+            ],
+            'nombre_rutina' => ['required', 'string'],
+            'fecha_entreno' => ['required', 'date'],
+            'nota_general' => ['nullable', 'string'],
+            'duracion_segundos' => ['nullable', 'integer'],
+            'descanso_segundos_usado' => ['nullable', 'integer'],
+            'ejercicios' => ['required', 'array'],
+            'ejercicios.*.nombre' => ['required', 'string'],
+            'ejercicios.*.orden' => ['required', 'integer'],
+            'ejercicios.*.rutina_ejercicio_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('rutina_ejercicios', 'id')->whereIn(
+                    'rutina_id',
+                    Rutina::query()->where('user_id', $request->user()->id)->select('id')
+                ),
+            ],
+            'ejercicios.*.series' => ['required', 'array'],
+            'ejercicios.*.series.*.orden' => ['required', 'integer'],
+            'ejercicios.*.series.*.reps' => ['required', 'integer'],
+            'ejercicios.*.series.*.peso' => ['required', 'numeric'],
+            'ejercicios.*.series.*.rir' => ['nullable', 'integer', 'between:0,5'],
+            'ejercicios.*.series.*.completada' => ['required', 'boolean'],
+        ];
+    }
+
+    private function reemplazarEjerciciosDesdePayload(Entreno $entreno, array $ejercicios): void
+    {
+        foreach ($ejercicios as $ejercicioData) {
+            $entrenoEjercicio = EntrenoEjercicio::create([
+                'entreno_id' => $entreno->id,
+                'rutina_ejercicio_id' => $ejercicioData['rutina_ejercicio_id'] ?? null,
+                'nombre' => $ejercicioData['nombre'],
+                'orden' => $ejercicioData['orden'],
+            ]);
+
+            foreach ($ejercicioData['series'] as $serieData) {
+                $rutinaEjId = $entrenoEjercicio->rutina_ejercicio_id !== null
+                    ? (int) $entrenoEjercicio->rutina_ejercicio_id
+                    : null;
+
+                $comparativa = $this->calcularComparativaObjetivo(
+                    $rutinaEjId,
+                    (int) $serieData['orden'],
+                    (int) $serieData['reps'],
+                    (float) $serieData['peso'],
+                );
+
+                $esPr = $this->calcularEsPr(
+                    (int) $entreno->id,
+                    $rutinaEjId,
+                    (string) $ejercicioData['nombre'],
+                    (int) $serieData['reps'],
+                    (float) $serieData['peso'],
+                    (bool) $serieData['completada'],
+                );
+
+                EntrenoSerie::create([
+                    'entreno_ejercicio_id' => $entrenoEjercicio->id,
+                    'orden' => $serieData['orden'],
+                    'reps' => $serieData['reps'],
+                    'peso' => $serieData['peso'],
+                    'rir' => $serieData['rir'] ?? null,
+                    'completada' => $serieData['completada'],
+                    'es_pr' => $esPr,
+                    'comparativa_objetivo' => $comparativa,
+                ]);
+            }
+        }
     }
 }

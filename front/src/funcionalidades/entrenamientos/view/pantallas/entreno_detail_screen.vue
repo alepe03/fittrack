@@ -140,7 +140,7 @@ async function confirmarBorrar() {
                 :key="i"
                 class="flex flex-wrap items-center gap-2"
               >
-                <span>Serie {{ i + 1 }}: {{ s.reps }} reps · {{ s.peso }} kg · RIR {{ s.rir ?? 2 }}</span>
+                <span>Serie {{ i + 1 }}: {{ s.reps }} reps · {{ s.peso }} kg · RIR {{ s.rir ?? '—' }}</span>
                 <span
                   :class="s.completada ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-700'"
                   class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium"

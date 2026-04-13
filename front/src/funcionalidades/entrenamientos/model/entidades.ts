@@ -7,6 +7,8 @@ export interface SerieReal {
   reps: number
   peso: number
   completada: boolean
+  /** Solo UI por ahora; se deriva a RIR para persistencia. */
+  rpe?: number | null
   /** null = sin RIR indicado (válido para POST /api/entrenos). */
   rir: number | null
   esPR?: boolean

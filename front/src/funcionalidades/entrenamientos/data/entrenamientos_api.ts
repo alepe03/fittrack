@@ -1,5 +1,6 @@
 /**
- * Entrenamientos: listado, creación y detalle vía API Laravel; localStorage solo como fallback del listado y para actualizar/borrar locales.
+ * Entrenamientos: CRUD principal vía API Laravel;
+ * localStorage queda como fallback para listado/detalle en errores puntuales.
  */
 import type { Entreno, SerieReal } from '../model/entidades'
 import { clienteApi } from '@/nucleo/red/cliente_api'
@@ -155,30 +156,42 @@ export async function crearEntreno(datos: Omit<Entreno, 'id'>): Promise<Entreno>
 }
 
 export async function actualizarEntreno(id: string, datos: Omit<Entreno, 'id'>): Promise<Entreno | null> {
-  await new Promise((r) => setTimeout(r, 200))
-  entrenos = cargarDesdeStorage()
-  const idx = entrenos.findIndex((e) => e.id === id)
-  if (idx === -1) return null
-  const actualizado: Entreno = {
-    ...datos,
-    id,
+  const payload = construirPayloadApi(datos)
+  console.log('[entrenamientos_api] PUT /entrenos/:id payload', id, JSON.stringify(payload, null, 2))
+
+  try {
+    const resp = await clienteApi.put(`/entrenos/${id}`, payload)
+    console.log('[entrenamientos_api] PUT /entrenos/:id respuesta', id, resp.status, resp.data)
+
+    const entrenoId = resp.data?.entreno_id ?? Number(id)
+    const showResp = await clienteApi.get(`/entrenos/${entrenoId}`)
+    console.log('[entrenamientos_api] GET /entrenos/:id tras actualizar', entrenoId, showResp.status, showResp.data)
+    return mapEntrenoDesdeApi(showResp.data)
+  } catch (error: unknown) {
+    const anyErr = error as any
+    if (anyErr?.response?.status === 404) return null
+    console.error('[entrenamientos_api] PUT /entrenos/:id error', error)
+    throw new Error(extraerMensajesRespuestaError(error))
   }
-  entrenos[idx] = actualizado
-  guardarEnStorage(entrenos)
-  return { ...actualizado }
 }
 
 export async function eliminarEntreno(id: string): Promise<boolean> {
-  await new Promise((r) => setTimeout(r, 150))
-  entrenos = cargarDesdeStorage()
-  const idx = entrenos.findIndex((e) => e.id === id)
-  if (idx === -1) return false
-  entrenos.splice(idx, 1)
-  guardarEnStorage(entrenos)
-  return true
+  try {
+    const resp = await clienteApi.delete(`/entrenos/${id}`)
+    console.log('[entrenamientos_api] DELETE /entrenos/:id respuesta', id, resp.status, resp.data)
+    return true
+  } catch (error: unknown) {
+    const anyErr = error as any
+    if (anyErr?.response?.status === 404) return false
+    console.error('[entrenamientos_api] DELETE /entrenos/:id error', error)
+    throw new Error(extraerMensajesRespuestaError(error))
+  }
 }
 
-/** Borra todos los entrenos asociados a una rutina y persiste en localStorage. */
+/**
+ * Utilidad local legacy/no crítica (fuera del CRUD principal API).
+ * Mantiene limpieza de entrenos en localStorage para flujos antiguos de fallback.
+ */
 export async function borrarEntrenosPorRutina(rutinaId: string): Promise<void> {
   await new Promise((r) => setTimeout(r, 100))
   entrenos = cargarDesdeStorage()

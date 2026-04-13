@@ -5,8 +5,8 @@ use App\Http\Controllers\Api\EntrenoController;
 use App\Http\Controllers\Api\RutinaController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/auth/register', [AuthController::class, 'register']);
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
@@ -22,4 +22,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/entrenos', [EntrenoController::class, 'index']);
     Route::post('/entrenos', [EntrenoController::class, 'store']);
     Route::get('/entrenos/{id}', [EntrenoController::class, 'show']);
+    Route::put('/entrenos/{id}', [EntrenoController::class, 'update']);
+    Route::delete('/entrenos/{id}', [EntrenoController::class, 'destroy']);
 });
