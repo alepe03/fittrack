@@ -24,7 +24,7 @@ function verDetalle() {
     <template #titulo>
       <button
         type="button"
-        class="text-left w-full font-medium text-gray-800 hover:text-blue-600 focus:outline-none"
+        class="text-left w-full rounded font-medium text-gray-800 hover:text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
         @click="verDetalle"
       >
         {{ rutina.nombre }}

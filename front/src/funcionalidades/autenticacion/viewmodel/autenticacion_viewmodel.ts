@@ -18,6 +18,8 @@ export const useAutenticacionViewModel = defineStore('autenticacion', () => {
 
   function limpiarSesionLocal(): void {
     borrarToken()
+    localStorage.removeItem('gym_entrenos')
+    sessionStorage.removeItem('fittrack_entreno_en_curso')
     usuario.value = null
     error.value = null
   }

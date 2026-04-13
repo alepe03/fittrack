@@ -1,5 +1,6 @@
 /**
- * Repositorio de entrenamientos: delega en entrenamientos_api (crear/detalle API + listado local).
+ * Repositorio de entrenamientos: delega en entrenamientos_api.
+ * CRUD principal por API; fallback local solo puntual en lectura cuando falla API.
  */
 import * as entrenamientosApi from './entrenamientos_api'
 import type { Entreno, EntrenoItem, SerieReal } from '../model/entidades'
