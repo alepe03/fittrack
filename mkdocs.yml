@@ -7,19 +7,38 @@ theme:
   name: material
 
 nav:
-  - Inicio: index.md
-  - Arquitectura: arquitectura.md
-  - Requisitos: requisitos.md
-  - Decisiones técnicas: decisiones.md
-  - MVP: mvp.md
-  - MVP Frontend: frontend-mvp.md
-  - DEW Frontend: dew-frontend.md
-  - Auditoría DEW: auditoria-dew-fit-track.md
-  - Backend (API): backend-api.md
-  - Backend (BD): backend-bd.md
-  - Presentación / Guion: presentacion-guion.md
-  - Estado actual: estado-actual.md
-  - Despliegue (Docker, CI, Pages): despliegue.md
+  - Introducción: index.md
+  - 02 MVP y visión funcional:
+      - MVP y flujo principal: 02-mvp-vision-funcional/mvp-y-vision-funcional.md
+  - 03 Frontend:
+      - Arquitectura y evidencias: 03-frontend/frontend.md
+  - 04 Backend:
+      - API, validaciones y modelo de datos: 04-backend/backend.md
+  - 05 Despliegue:
+      - Docker, entornos y CI/CD: 05-despliegue/despliegue.md
+  - 06 DOR:
+      - Diseño y experiencia: 06-dor/dor.md
+  - 07 IPW:
+      - Mercado y propuesta: 07-ipw/ipw.md
+  - 08 SOJ:
+      - ODS e impacto: 08-soj/soj.md
+  - 09 SSG:
+      - Gestión y aplicabilidad real: 09-ssg/ssg.md
+  - 10 Conclusión:
+      - Cierre y próximos pasos: 10-conclusion/conclusion.md
+  - Anexos técnicos (legado):
+      - Arquitectura (original): arquitectura.md
+      - Requisitos (original): requisitos.md
+      - Decisiones técnicas (original): decisiones.md
+      - MVP global (original): mvp.md
+      - MVP Frontend (original): frontend-mvp.md
+      - DEW Frontend (original): dew-frontend.md
+      - Auditoría DEW (original): auditoria-dew-fit-track.md
+      - Backend API (original): backend-api.md
+      - Backend BD (original): backend-bd.md
+      - Estado actual (original): estado-actual.md
+      - Despliegue (original): despliegue.md
+      - Guion presentación (original): presentacion-guion.md
 
 markdown_extensions:
   - admonition

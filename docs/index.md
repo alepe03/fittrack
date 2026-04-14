@@ -1,38 +1,62 @@
-# FitTrack
+# 1. Introducción
 
-Documentación oficial del proyecto FitTrack.
+## Qué es FitTrack
 
-FitTrack es una aplicación web orientada al seguimiento de rutinas de gimnasio, entrenamientos y progreso físico del usuario.
+FitTrack es una aplicación web orientada a la planificación de rutinas de entrenamiento y al registro de sesiones realizadas.
 
-## Objetivo general
-Demostrar un producto funcional y defendible con una arquitectura moderna:
-- Frontend SPA con Vue 3 + TypeScript (SFC + Composition API, Vue Router, Pinia).
-- Backend REST con Laravel + PostgreSQL.
-- Integración real (ya validada) del módulo **rutinas** entre frontend-backend-bd.
+El objetivo principal es ofrecer una herramienta sencilla donde el usuario pueda organizar sus entrenamientos y consultar su evolución de forma clara.
 
-## Stack principal
-- Frontend: Vue 3 + TypeScript + SFC + Composition API + Vue Router + Pinia.
-- Backend: Laravel (API REST) + PostgreSQL.
-- Documentación: MkDocs.
+Está pensada para personas que entrenan de forma habitual y necesitan tener todo su progreso organizado en un mismo sitio.
 
-## Estructura del repositorio (monorepo)
-En este repositorio encontrarás:
-- `front/`: SPA Vue (módulos por funcionalidades).
-- `backend/`: API Laravel.
-- `docs/`: documentación del proyecto (MkDocs), publicable en **GitHub Pages** mediante GitHub Actions.
-- `deploy/`: Docker Compose, Dockerfiles y configuración Nginx para levantar PostgreSQL, Laravel (PHP-FPM), API y frontend en contenedores.
-- `.github/workflows/`: integración continua (build frontend, tests backend, validación MkDocs) y despliegue de la documentación a Pages.
+---
 
-## Índice de la documentación
-- `arquitectura.md`: arquitectura real y estado de integración actual.
-- `requisitos.md`: requisitos funcionales y técnicos (implementado vs futuro).
-- `decisiones.md`: decisiones técnicas defendibles.
-- `mvp.md`: MVP global real (alcance defendible).
-- `frontend-mvp.md`: MVP detallado del frontend y pantallas/flujo.
-- `dew-frontend.md`: criterios DEW del frontend (documento específico).
-- `auditoria-dew-fit-track.md`: auditoría DEW/DOR (coherente con el estado actual).
-- `backend-api.md`: backend (tablas, relaciones y endpoints de rutinas).
-- `backend-bd.md`: base de datos (modelo, cascadas y diseño de histórico).
-- `presentacion-guion.md`: guía breve para presentación/defensa.
-- `estado-actual.md`: hoja de estado honesta (implementado / parcial / futuro).
-- `despliegue.md`: Docker Compose, flujo de peticiones, GitHub Actions (CI) y GitHub Pages (documentación); qué está automatizado y qué no.
+## Problema que resuelve
+
+Cuando se entrena por cuenta propia, es bastante común no llevar un seguimiento claro.
+
+Muchas veces:
+
+- Las rutinas están dispersas  
+- No se registran los entrenamientos  
+- No se tiene una referencia real del progreso  
+
+Esto hace que sea más difícil mejorar de forma constante o saber si lo que se está haciendo está funcionando.
+
+---
+
+## Enfoque de la solución
+
+FitTrack plantea una solución simple: unir la planificación y el seguimiento dentro de la misma aplicación.
+
+De esta forma, el usuario puede:
+
+- Definir sus rutinas  
+- Registrar lo que entrena  
+- Consultar su evolución  
+
+El desarrollo del proyecto se ha hecho de forma progresiva, priorizando primero un núcleo funcional sólido y dejando otras funcionalidades para fases posteriores.
+
+---
+
+## Arquitectura general
+
+La aplicación sigue una arquitectura web dividida en tres partes:
+
+- **Frontend:** desarrollado en Vue 3  
+- **Backend:** API REST en Laravel  
+- **Base de datos:** PostgreSQL  
+
+El frontend se comunica con el backend mediante peticiones HTTP, y el backend se encarga de gestionar la lógica y el acceso a datos.
+
+---
+
+## Stack tecnológico
+
+Las tecnologías utilizadas en el proyecto son:
+
+- **Frontend:** Vue 3 + TypeScript  
+- **Backend:** Laravel (PHP)  
+- **Base de datos:** PostgreSQL  
+- **Despliegue:** Docker + NGINX  
+
+La elección de este stack se basa en su facilidad de uso, modularidad y adecuación al tipo de proyecto.
