@@ -1,26 +1,39 @@
-# 10. Conclusion
+# 10. Conclusión
 
-## Resumen del valor del proyecto
+## Resumen del proyecto
 
-FitTrack entrega una base funcional solida para planificar rutinas y registrar entrenamientos, con una arquitectura clara y defendible en contexto academico.
+FitTrack es una aplicación web que permite planificar rutinas de entrenamiento y registrar sesiones, integrando frontend, backend y base de datos en un sistema funcional y coherente.
 
-## Estado real
+El proyecto demuestra un flujo completo de uso, desde la organización de rutinas hasta el registro del entrenamiento, con una arquitectura clara y defendible.
 
-- Flujo de rutinas implementado de extremo a extremo.
-- Frontend de entrenamientos funcional, pendiente de integracion REST completa.
-- Despliegue reproducible y pipeline de validacion documental/técnica disponible.
+---
 
-## Fortalezas
+## Valor técnico
 
-- Arquitectura modular y explicable.
-- Integracion real frontend-backend-bd en el modulo principal.
-- Documentacion orientada a defensa con separacion de alcance real.
+A nivel técnico, el proyecto cumple con los distintos bloques del desarrollo web:
 
-## Proximos pasos
+- **Frontend (DEW):** aplicación SPA en Vue 3 con gestión de estado, reactividad y estructura modular  
+- **Backend (DSW):** API REST en Laravel con modelo de datos coherente  
+- **Despliegue (DPL):** entorno reproducible con Docker, NGINX y automatización mediante GitHub Actions  
+- **Diseño (DOR):** interfaz usable, responsive y coherente  
+- **IPW y SOJ:** análisis de mercado, sostenibilidad e impacto del proyecto  
 
-- Integrar entrenamientos con API REST real.
-- Implementar autenticacion backend.
-- Completar bloques IPW, SOJ y SSG con evidencia y analisis final.
+Esto demuestra una visión completa del desarrollo, no solo a nivel de código sino también de arquitectura, despliegue y producto.
 
-> [!NOTE]
-> Zona para cierre visual: tabla final de logros + roadmap de siguiente iteracion.
+---
+
+## Fortalezas del proyecto
+
+- Arquitectura clara y modular  
+- Flujo funcional real, no solo prototipo  
+- Integración entre frontend, backend y base de datos  
+- Documentación estructurada y preparada para defensa  
+- Uso de herramientas reales de desarrollo y despliegue  
+
+---
+
+## Conclusión final
+
+FitTrack no se plantea como una aplicación compleja, sino como una solución clara y bien definida a un problema concreto: organizar el entrenamiento de forma estructurada.
+
+El proyecto demuestra la capacidad de diseñar, desarrollar y desplegar una aplicación web completa, manteniendo coherencia entre todas sus partes y justificando cada decisión tomada.
