@@ -1,73 +1,110 @@
 # 8. SOJ
 
-## 1. ODS relacionados
+## 1. Introducción
 
-### ODS 3 (principal): Salud y bienestar
+FitTrack es una aplicación orientada a la organización del entrenamiento personal. En este apartado se analiza su alineación con los Objetivos de Desarrollo Sostenible (ODS) y los impactos asociados a su uso.
 
-FitTrack se alinea directamente con el ODS 3, ya que facilita la planificación y el seguimiento de la actividad física, elementos clave para mantener hábitos saludables en el tiempo.
-
-### ODS 13 (secundario): Acción por el clima
-
-La relación con el ODS 13 es indirecta y limitada.  
-Al tratarse de una aplicación digital ligera, puede reducir el uso de registros en papel, pero su impacto climático real es reducido y no se considera un eje principal del proyecto.
+El objetivo es identificar impactos reales, evaluarlos y determinar su relevancia dentro del alcance del proyecto.
 
 ---
 
-## 2. Justificación
+## 2. ODS relacionados
 
-La relación del proyecto con los ODS se da principalmente a nivel de comportamiento del usuario:
+### ODS 3: Salud y bienestar
 
-- La aplicación ayuda a organizar rutinas  
-- Favorece la continuidad en la práctica de ejercicio  
-- Mejora la trazabilidad básica del entrenamiento  
+**Justificación**  
+FitTrack facilita la planificación y seguimiento del entrenamiento, ayudando a mantener hábitos saludables.
 
-FitTrack no pretende generar un impacto sanitario global, sino aportar valor a escala individual mediante una mejor organización del entrenamiento.
+**Aplicación en el proyecto**
+
+- Organización de rutinas  
+- Registro de entrenamientos  
+- Mejora de la continuidad en el ejercicio  
 
 ---
 
-## 3. Impactos
+### ODS 13: Acción por el clima
 
-Se identifican los siguientes impactos asociados al uso de la aplicación:
+**Justificación**  
+La aplicación tiene un impacto indirecto al ser una herramienta digital ligera.
+
+**Aplicación en el proyecto**
+
+- Reducción del uso de papel  
+- Uso de arquitectura sin consumo intensivo  
+
+---
+
+## 3. Identificación de impactos, riesgos y oportunidades
+
+Se identifican los siguientes elementos:
 
 ### Impactos positivos
 
-- Mayor orden en la planificación del entrenamiento  
-- Mejora de la continuidad al integrar planificación y registro  
-- Reducción de fricción en la consulta y actualización de rutinas  
-
-### Impactos neutros o condicionados
-
-- Digitalización del registro (reducción de uso de papel según hábitos del usuario)  
-
-### Impactos negativos potenciales
-
-- Dependencia del uso continuo de la herramienta para mantener organización  
-- Posible uso incorrecto como sustituto de criterio profesional en planificación avanzada  
+1. Mejora de la organización del entrenamiento  
+2. Aumento de la continuidad en la práctica deportiva  
+3. Reducción de fricción en el registro de actividad  
 
 ---
 
-## 4. Riesgos y oportunidades
+### Impactos negativos
 
-### Riesgos reales
-
-- Abandono de la aplicación si el flujo no se percibe suficientemente simple  
-- Interpretación errónea como sistema experto de entrenamiento  
-- Reducción de utilidad percibida si algunos módulos no están completamente integrados  
-
-### Oportunidades de mejora
-
-- Completar la integración del flujo de entrenamientos  
-- Incorporar indicadores simples de progreso  
-- Mejorar mensajes y guía de uso para ajustar expectativas del usuario  
+4. Dependencia de la aplicación para mantener hábitos  
+5. Uso incorrecto como sustituto de asesoramiento profesional  
 
 ---
 
-## 5. Materialidad
+### Oportunidades
 
-Los impactos más relevantes del proyecto se centran en su valor de uso directo:
+6. Mejora del sistema de seguimiento  
+7. Incorporación de indicadores de progreso  
+8. Mejora de la experiencia de usuario  
 
-- **Alta materialidad:** organización de rutinas y continuidad del entrenamiento  
-- **Materialidad media:** facilidad de uso y reducción de fricción  
-- **Materialidad baja:** impacto ambiental indirecto  
+---
 
-Esta priorización es coherente con el alcance del proyecto, centrado en efectos directos, verificables y defendibles frente a impactos globales no medibles en esta fase.
+## 4. Evaluación y materialidad
+
+Para evaluar los impactos se utiliza un criterio simple:
+
+- **Impacto (1-5)** → nivel de influencia  
+- **Probabilidad (1-5)** → frecuencia de ocurrencia  
+- **Materialidad = Impacto x Probabilidad**
+
+---
+
+### Evaluación
+
+| Elemento                                      | Impacto | Probabilidad | Materialidad |
+|-----------------------------------------------|--------|-------------|-------------|
+| Organización del entrenamiento                | 5      | 5           | 25          |
+| Continuidad en el ejercicio                   | 4      | 4           | 16          |
+| Reducción de fricción                         | 4      | 4           | 16          |
+| Dependencia de la aplicación                  | 3      | 3           | 9           |
+| Uso incorrecto como sistema experto           | 3      | 2           | 6           |
+| Mejora del sistema de seguimiento (oportun.)  | 4      | 3           | 12          |
+| Mejora de experiencia de usuario (oportun.)   | 4      | 4           | 16          |
+
+---
+
+### Interpretación
+
+- **Alta materialidad (>15)**  
+  - Organización del entrenamiento  
+  - Continuidad en el ejercicio  
+  - Experiencia de usuario  
+
+- **Materialidad media (8-15)**  
+  - Reducción de fricción  
+  - Dependencia de la aplicación  
+  - Mejora del sistema  
+
+- **Materialidad baja (<8)**  
+  - Uso incorrecto como sistema experto  
+
+---
+
+## 6. Conclusión SOJ
+
+FitTrack se alinea principalmente con el ODS 3 (salud y bienestar), aportando valor a nivel individual mediante la organización del entrenamiento.
+
+Los impactos más relevantes están relacionados con la mejora de hábitos y continuidad del ejercicio, mientras que los impactos negativos son limitados y controlables.

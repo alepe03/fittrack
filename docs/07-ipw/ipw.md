@@ -1,82 +1,169 @@
 # 7. IPW
 
-## 1. Contexto de mercado
+## 1. Introducción
 
-FitTrack se sitúa en el ámbito de las aplicaciones de entrenamiento y hábitos fitness, un entorno con numerosas herramientas orientadas al registro de actividad física.
+FitTrack se plantea como una aplicación orientada a la organización del entrenamiento personal, centrada en la planificación de rutinas y el registro de sesiones.
 
-Dentro de este contexto, existe una necesidad clara: organizar la planificación del entrenamiento de forma estructurada.
-
-Muchas personas entrenan con rutinas dispersas o sin seguimiento consistente, lo que dificulta mantener continuidad.
-
-FitTrack se enfoca en cubrir esta necesidad mediante una propuesta simple, práctica y alineada con el alcance del proyecto.
+Este apartado analiza el mercado, el usuario, la competencia y define un planteamiento básico de marketing y sostenibilidad, aplicados al proyecto.
 
 ---
 
-## 2. Usuario objetivo
+## 2. Análisis de mercado
 
-El usuario objetivo es una persona que entrena de forma regular (en gimnasio o por cuenta propia) y necesita estructura para organizar su actividad.
+**Contexto**  
+El mercado de aplicaciones fitness está ampliamente desarrollado, con soluciones que ofrecen desde registro básico hasta análisis avanzado del rendimiento.
 
-Sus necesidades principales son:
+**Problema detectado**  
+Muchos usuarios no necesitan herramientas complejas, sino una forma clara de:
 
-- Definir rutinas de forma ordenada  
-- Consultar rápidamente su planificación  
-- Registrar entrenamientos sin fricción  
-- Mantener una visión clara de su actividad  
+- organizar rutinas  
+- registrar entrenamientos  
+- mantener continuidad  
 
-No se busca cubrir perfiles avanzados de análisis deportivo, sino resolver correctamente el uso cotidiano básico.
+**Posición de FitTrack**  
+FitTrack se sitúa como una solución sencilla, centrada en la planificación estructurada, evitando la sobrecarga de funcionalidades.
 
----
-
-## 3. Competencia
-
-Existen múltiples aplicaciones de fitness con enfoques amplios y gran cantidad de funcionalidades.
-
-FitTrack se diferencia por su planteamiento:
-
-- Foco en la gestión de rutinas como núcleo  
-- Interfaz directa sin sobrecarga funcional  
-- Estructura pensada para uso práctico y aprendizaje técnico  
-
-No se plantea competir en amplitud con soluciones consolidadas, sino ofrecer una solución clara, funcional y bien delimitada.
+**Por qué está bien planteado**  
+El proyecto identifica una necesidad real y define un alcance coherente con ella.
 
 ---
 
-## 4. Propuesta de valor
+## 3. Usuario y clientes
 
-FitTrack aporta valor al concentrar el ciclo básico del entrenamiento en una única herramienta:
+**Usuario objetivo**
 
-- Crear y mantener rutinas  
-- Consultar su estructura (ejercicios y series)  
-- Apoyar el registro de entrenamientos  
+- Personas que entrenan de forma regular  
+- Usuarios de gimnasio o entrenamiento personal  
+- Nivel básico o intermedio  
 
-Su propuesta se basa en la claridad: reducir complejidad y mejorar la organización del usuario.
+**Necesidades**
 
----
+- Tener rutinas organizadas  
+- Consultar rápidamente la planificación  
+- Registrar entrenamientos sin complejidad  
+- Mantener seguimiento sencillo  
 
-## 5. Producto (visión simple)
-
-### Estado actual (MVP)
-
-El producto entrega de forma sólida el módulo de rutinas, integrado end-to-end con frontend, backend y base de datos.
-
-### Evolución prevista
-
-Las siguientes fases naturales del producto incluyen:
-
-- Integración completa del flujo de entrenamientos vía API  
-- Autenticación backend real  
-- Mejora progresiva de seguimiento y análisis  
-
-La evolución se plantea de forma incremental, manteniendo coherencia con la arquitectura actual.
+**Por qué está bien definido**  
+Se enfoca en un perfil concreto y realista, alineado con el alcance del proyecto.
 
 ---
 
-## 6. Sostenibilidad básica
+## 4. Competencia
 
-FitTrack mantiene una huella técnica contenida:
+**Situación actual**  
+Existen aplicaciones completas con muchas funcionalidades (tracking avanzado, análisis, comunidad, etc.).
 
-- Aplicación web ligera en su alcance actual  
-- Arquitectura sin dependencia de infraestructura compleja  
-- Despliegue reproducible con Docker Compose  
+**Diferenciación de FitTrack**
 
-Este planteamiento es coherente con un proyecto académico: suficiente para demostrar capacidades sin sobredimensionar el sistema.
+- Enfoque en rutinas como núcleo  
+- Interfaz simple  
+- Menor complejidad  
+
+**Por qué está bien planteado**  
+No intenta competir directamente con grandes plataformas, sino ofrecer una solución clara y bien definida.
+
+---
+
+## 5. Plan de marketing (4P)
+
+### Producto
+
+FitTrack es una aplicación web que permite:
+
+- Crear y gestionar rutinas  
+- Consultar ejercicios y series  
+- Registrar entrenamientos  
+
+El producto se centra en la funcionalidad principal sin añadir complejidad innecesaria.
+
+---
+
+### Precio
+
+El proyecto se plantea como:
+
+- Aplicación gratuita (fase académica)  
+
+Esto permite centrarse en validar la funcionalidad sin barreras de acceso.
+
+---
+
+### Distribución
+
+- Aplicación web accesible desde navegador  
+- Despliegue mediante servidor web (NGINX)  
+
+Esto facilita el acceso sin instalación.
+
+---
+
+### Promoción
+
+- Presentación del proyecto  
+- Publicación en repositorio GitHub  
+- Documentación accesible  
+
+Se prioriza la visibilidad académica y técnica del proyecto.
+
+---
+
+## 6. Sostenibilidad
+
+### Impacto ambiental
+
+- Uso de arquitectura ligera  
+- Sin consumo excesivo de recursos  
+- Despliegue controlado mediante Docker  
+
+---
+
+### Impacto social
+
+- Fomenta hábitos saludables  
+- Facilita la organización del entrenamiento  
+- Accesible para distintos perfiles de usuario  
+
+---
+
+### Impacto económico
+
+- Coste bajo de desarrollo  
+- Uso de herramientas open source  
+- Escalable sin inversión inicial elevada  
+
+---
+
+## 7. Normativa y buenas prácticas
+
+El proyecto tiene en cuenta aspectos básicos:
+
+- Separación de frontend y backend  
+- Uso de buenas prácticas en desarrollo web  
+- Gestión de datos estructurada  
+
+Además, se considera la importancia de:
+
+- protección de datos (en caso de evolución del proyecto)  
+- uso responsable de información del usuario  
+
+---
+
+## 8. Documentación y defensa
+
+**Documentación**
+
+- Estructurada mediante MkDocs  
+- Organizada por bloques (DEW, DSW, DPL, DOR, IPW)  
+- Clara y preparada para evaluación  
+
+**Defensa**
+
+- Explicación del enfoque de mercado  
+- Justificación de decisiones de producto  
+- Relación entre funcionalidades y necesidades reales  
+
+---
+
+## 9. Conclusión IPW
+
+FitTrack presenta un análisis coherente del mercado, usuario y competencia, junto con un planteamiento básico de marketing y sostenibilidad.

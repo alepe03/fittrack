@@ -1,78 +1,139 @@
-# 6. DOR
+# 6. Diseño de interfaces (DOR)
 
-## 1. Enfoque de diseño
+## 1. Introducción
 
-El diseño de FitTrack se plantea con una filosofía **simple, funcional y orientada al uso real**.
+El diseño de FitTrack se centra en facilitar el uso de la aplicación, priorizando claridad, simplicidad y coherencia en la interfaz.
 
-La prioridad no es añadir complejidad visual, sino facilitar que el usuario complete tareas clave (consultar, crear y gestionar rutinas) de forma rápida y clara.
+El objetivo principal es que el usuario pueda realizar las acciones clave (gestionar rutinas y registrar entrenamientos) de forma rápida y sin fricción.
 
-Este enfoque se traduce en:
-
-- Pantallas limpias  
-- Estructura predecible  
-- Acciones visibles en el contexto adecuado  
+Este apartado demuestra el cumplimiento de los criterios de DOR aplicados al proyecto.
 
 ---
 
-## 2. Framework CSS
+## 2. Diseño responsive
 
-La interfaz se construye utilizando **Tailwind CSS**.
+**Explicación aplicada al proyecto**  
+La aplicación sigue un enfoque mobile-first, adaptando la interfaz a distintos tamaños de pantalla.
 
-Se elige porque permite:
+**Dónde se aplica**
 
-- Mantener consistencia visual entre pantallas  
-- Acelerar iteraciones sin romper estructura  
-- Aplicar patrones reutilizables directamente en componentes  
+- Layouts con contenedores adaptativos  
+- Uso de clases responsive de Tailwind (`sm`, `md`, `lg`)  
+- Formularios y listados ajustados a móvil y escritorio  
 
-En FitTrack, proporciona una base estable para formularios, tarjetas, modales, botones y layouts, evitando estilos aislados difíciles de mantener.
+**Por qué está bien implementado**  
+El flujo principal se mantiene usable en cualquier dispositivo, sin pérdida de funcionalidad.
 
----
+**Evidencia**
 
-## 3. Responsive
+![Imagen 1: layout responsive](../assets/dor/dor_2_1.png)
 
-El frontend sigue un enfoque **mobile-first**, adaptando la interfaz progresivamente a tamaños mayores.
-
-En la práctica:
-
-- Contenedores y anchos máximos evitan interfaces desproporcionadas  
-- El layout mantiene navegación y contenido legibles en móvil y escritorio  
-- Formularios y listados conservan jerarquía en diferentes resoluciones  
-
-El objetivo es garantizar que el flujo principal sea usable en cualquier dispositivo.
+*Adaptación del layout entre móvil y escritorio mediante clases responsive.*
 
 ---
 
-## 4. Accesibilidad
+## 3. Accesibilidad (WCAG)
 
-La aplicación incorpora medidas básicas de accesibilidad aplicadas a casos reales:
+**Explicación aplicada al proyecto**  
+Se aplican criterios básicos de accesibilidad enfocados a casos reales de uso.
 
-- Uso de labels en campos de formulario  
-- Estados de foco visibles en elementos interactivos  
-- Modal accesible preparado para interacción por teclado  
-- Mensajes de error claros y contextualizados  
+**Dónde se aplica**
 
-No se incluye una auditoría WCAG completa, pero sí una base funcional coherente con el alcance académico del proyecto.
+- Labels asociados a inputs  
+- Mensajes de error con `role="alert"`  
+- Navegación por teclado en modales  
+- Uso de `focus-visible` en elementos principales  
+
+**Por qué está bien implementado**  
+La interfaz es usable sin depender exclusivamente del ratón y proporciona feedback claro al usuario.
+
+No obstante, la accesibilidad no es homogénea en toda la aplicación, especialmente en botones secundarios y formularios complejos.
+
+**Evidencia**
+
+![Imagen 1: formulario accesible](../assets/dor/dor_3_1.png)
+
+*Inputs con label, validación y mensajes accesibles.*
+
+![Imagen 2: modal accesible](../assets/dor/dor_3_2.png)
+
+*Modal con navegación por teclado, foco controlado y cierre mediante Escape.*
 
 ---
 
-## 5. Usabilidad
+## 4. Uso de framework CSS
 
-La usabilidad se trabaja directamente desde el flujo de tareas:
+**Explicación aplicada al proyecto**  
+Se utiliza Tailwind CSS como framework principal de estilos.
 
-- Acciones principales claramente identificables (crear, guardar, confirmar)  
-- Secuencia lógica en pantallas de listado, detalle y formulario  
-- Feedback visible en estados de carga, error y validación  
+**Dónde se usa**
 
-Esto reduce ambigüedad y facilita la interacción del usuario.
+- Formularios  
+- Tarjetas  
+- Botones  
+- Modales  
+- Layout general  
+
+**Por qué está bien implementado**  
+Permite mantener consistencia visual, reutilizar patrones y evitar estilos desordenados.
+
+**Evidencia**
+
+![Imagen 1: uso de Tailwind](../assets/dor/dor_4_1.png)
+
+*Uso de clases utilitarias de Tailwind en componentes del proyecto.*
 
 ---
 
-## 6. Coherencia visual
+## 5. Gama de colores
 
-FitTrack mantiene coherencia visual en tres niveles:
+**Explicación aplicada al proyecto**  
+La aplicación utiliza una paleta de colores coherente orientada a claridad visual.
 
-- **Colores:** paleta consistente para acciones, estados y mensajes  
-- **Jerarquía:** títulos, bloques y acciones con orden claro  
-- **Componentes:** reutilización de elementos base (botones, tarjetas, modales, layout)  
+**Dónde se aplica**
 
-Esta coherencia facilita el aprendizaje de la interfaz y refuerza la percepción de un producto integrado.
+- Azul para acciones principales  
+- Rojo para acciones destructivas o errores  
+- Verde y ámbar para estados (progreso, logros)  
+- Fondo neutro para facilitar lectura  
+
+**Por qué está bien implementado**  
+Se mantiene coherencia visual en toda la aplicación y una diferenciación clara entre tipos de acciones.
+
+No obstante, no se ha realizado una validación formal de contraste WCAG, por lo que algunos tonos pueden requerir verificación adicional.
+
+**Evidencia**
+
+![Imagen 1: paleta de colores](../assets/dor/dor_5_1.png)
+
+*Uso consistente de colores en distintas pantallas de la aplicación.*
+
+---
+
+## 6. Usabilidad
+
+**Explicación aplicada al proyecto**  
+La interfaz está diseñada en función del flujo real del usuario.
+
+**Dónde se aplica**
+
+- Pantallas de listado, detalle y formulario  
+- Acciones principales visibles (crear, editar, guardar)  
+- Feedback en acciones (carga, error, confirmación)  
+
+**Por qué está bien implementado**  
+El usuario puede completar tareas sin ambigüedad, siguiendo un flujo claro.
+
+Se proporciona feedback visual en los momentos clave del uso de la aplicación.
+
+**Evidencia**
+
+![Imagen 1: flujo de uso](../assets/dor/dor_6_1.png)
+
+*Flujo completo de uso desde rutinas hasta registro de entreno.*
+
+---
+
+## 9. Conclusión DOR
+
+El diseño de FitTrack cumple los criterios de DOR: interfaz responsive, aplicación de criterios básicos de accesibilidad, uso de framework CSS (Tailwind), coherencia en la gama de colores y cumplimiento de criterios de usabilidad.

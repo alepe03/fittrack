@@ -1,114 +1,196 @@
-# 5. Despliegue
+# 5. Despliegue (DPL)
 
-## 1. Arquitectura de despliegue
+## 1. Introducción
 
-El despliegue de FitTrack se basa en una arquitectura por servicios claramente separada, alineada con la estructura de la aplicación:
+El despliegue de FitTrack se basa en una arquitectura por servicios que separa frontend, backend y base de datos.
 
-- **Frontend:** servido mediante NGINX  
-- **Backend:** API Laravel ejecutada sobre PHP-FPM  
-- **Base de datos:** PostgreSQL para persistencia relacional  
+Se utilizan herramientas como Docker, Docker Compose, NGINX, Portainer y GitHub Actions para definir un entorno reproducible, controlado y preparado para su defensa.
 
-Esta separación permite aislar responsabilidades, facilitar el mantenimiento y garantizar un comportamiento predecible del sistema.
-
-### Flujo general de peticiones
-
-El flujo de ejecución es el siguiente:
-
-1. El usuario accede a la interfaz frontend  
-2. Las solicitudes a la API se enrutan hacia el backend  
-3. El backend procesa la lógica de negocio  
-4. Se consulta o actualiza la base de datos PostgreSQL  
-5. La respuesta se devuelve al frontend  
-
-Este flujo refleja una arquitectura web estándar, clara y fácilmente defendible.
+Este apartado demuestra el cumplimiento de los criterios de DPL aplicados al proyecto.
 
 ---
 
-## 2. Uso de Docker Compose
+## 2. Configuración del entorno (Docker + NGINX)
 
-Docker Compose se utiliza para definir y levantar el entorno completo de la aplicación de forma reproducible.
+**Explicación aplicada al proyecto**  
+La aplicación se ejecuta mediante contenedores Docker que encapsulan cada parte del sistema.
 
-A partir de una única configuración, FitTrack despliega:
+**Servicios definidos**
 
-- frontend (NGINX)  
-- backend (Laravel + PHP-FPM)  
-- base de datos PostgreSQL  
+- Frontend: servido con NGINX  
+- Backend: Laravel ejecutándose sobre PHP-FPM  
+- Base de datos: PostgreSQL  
 
-Esta elección responde a criterios prácticos:
+**Por qué está bien implementado**  
+Cada servicio está aislado, lo que permite reproducir el entorno completo en cualquier máquina sin configuraciones manuales.
 
-- simplicidad operativa  
-- trazabilidad del entorno  
-- capacidad de replicar la ejecución en cualquier máquina  
+**Evidencia**
 
-Se prioriza una solución suficiente para el alcance del proyecto frente a orquestadores más complejos.
+![Imagen 1: servicios Docker](../assets/dpl/dpl_2_1.png)
 
----
+*Definición de servicios en docker-compose.*
 
-## 3. Entornos (staging / production)
+![Imagen 2: configuración NGINX](../assets/dpl/dpl_2_2.png)
 
-El proyecto contempla dos configuraciones de entorno:
-
-- **staging**  
-- **production**  
-
-Ambos comparten la misma arquitectura base, pero difieren en:
-
-- puertos expuestos  
-- variables de entorno  
-- configuración operativa  
-
-Esta separación permite validar cambios en un entorno intermedio antes de su uso en producción, manteniendo un flujo de despliegue más controlado y defendible.
+*Configuración de NGINX para servir frontend y conectar con backend.*
 
 ---
 
-## 4. NGINX
+## 3. Orquestación con Docker Compose
 
-NGINX cumple un papel clave en la arquitectura:
+**Explicación aplicada al proyecto**  
+Se utiliza Docker Compose para levantar todos los servicios del sistema de forma conjunta.
 
-- En **frontend**, sirve los recursos de la SPA  
-- En **backend**, actúa como servidor web delante de Laravel (PHP-FPM)  
+**Qué permite**
 
-Además, centraliza el encaminamiento de peticiones hacia la API, permitiendo que el frontend consuma un flujo unificado sin exponer la estructura interna de servicios.
+- Iniciar frontend, backend y base de datos con un solo comando  
+- Definir dependencias entre servicios  
+- Mantener un entorno consistente  
 
-No se detalla la configuración de bajo nivel, ya que el objetivo es explicar la arquitectura y no las directivas específicas.
+**Por qué está bien implementado**  
+Se utiliza una solución adecuada al alcance del proyecto, gestionando servicios y dependencias sin añadir complejidad innecesaria.
 
----
+**Evidencia**
 
-## 5. CI/CD
+![Imagen 1: docker compose](../assets/dpl/dpl_3_1.png)
 
-La automatización del proyecto se apoya en GitHub Actions.
-
-### Integración continua (CI)
-
-Se ejecutan validaciones en cada cambio relevante:
-
-- build del frontend  
-- tests del backend  
-- validación de la documentación  
-
-### Publicación de documentación
-
-La documentación se despliega automáticamente en GitHub Pages, garantizando una versión accesible y actualizada.
-
-### Imágenes Docker
-
-El proyecto contempla la generación de imágenes Docker, facilitando su uso en despliegues controlados.
-
-Es importante diferenciar:
-
-- **CI (implementado):** validación automática del proyecto  
-- **CD completo (no implementado):** despliegue automático de la aplicación  
+*Orquestación de servicios mediante Docker Compose.*
 
 ---
 
-## 6. Limitaciones reales (honestidad del alcance)
+## 4. Entornos diferenciados (staging / producción)
 
-El estado del despliegue se presenta de forma explícita:
+**Explicación aplicada al proyecto**  
+El proyecto define dos entornos mediante archivos Docker Compose adicionales:
 
-- Existe integración continua y publicación automática de documentación  
-- No existe despliegue automático completo de la aplicación  
-- El despliegue final se realiza manualmente mediante Docker Compose  
+- Staging  
+- Producción  
 
-Esta decisión es coherente con el alcance académico del proyecto y permite mantener control total sobre el proceso sin introducir complejidad innecesaria.
+**Diferencias**
 
-Lejos de ser una limitación crítica, refuerza la defensa de una arquitectura correcta y comprendida.
+- Configuración de variables de entorno  
+- Puertos expuestos  
+- Nivel de debug  
+- Exposición de la base de datos  
+
+**Por qué está bien implementado**  
+Se utiliza Docker Compose con archivos específicos (`docker-compose.staging.yml` y `docker-compose.prod.yml`), lo que permite adaptar el comportamiento del sistema según el entorno sin duplicar configuración.
+
+Además, el despliegue de los contenedores se gestiona mediante Portainer, lo que permite visualizar, controlar y administrar los servicios Docker de forma gráfica.
+
+Esto facilita la gestión de entornos sin necesidad de ejecutar comandos manuales directamente.
+
+**Evidencia**
+
+![Imagen 1: entorno staging](../assets/dpl/dpl_4_1.png)
+
+*Configuración del entorno de staging.*
+
+![Imagen 2: entorno producción](../assets/dpl/dpl_4_2.png)
+
+*Configuración del entorno de producción.*
+
+![Imagen 3: portainer producción](../assets/dpl/dpl_4_3.png)
+
+*Contenedores en entorno de producción gestionados con Portainer.*
+
+![Imagen 4: portainer staging](../assets/dpl/dpl_4_4.png)
+
+*Contenedores en entorno de staging con diferentes configuraciones.*
+---
+
+## 5. Control de versiones (Git)
+
+**Explicación aplicada al proyecto**  
+El proyecto utiliza Git para el seguimiento del desarrollo.
+
+**Dónde se aplica**
+
+- Gestión de versiones del código  
+- Control de cambios  
+- Integración con GitHub  
+
+**Por qué está bien implementado**  
+Permite mantener trazabilidad del proyecto y facilita el uso de herramientas automáticas como CI/CD.
+
+**Evidencia**
+
+![Imagen 1: repositorio Git](../assets/dpl/dpl_5_1.png)
+
+*Historial de commits del proyecto.*
+
+---
+
+## 6. Integración continua y despliegue (CI/CD)
+
+**Explicación aplicada al proyecto**  
+Se utiliza GitHub Actions para automatizar procesos del proyecto.
+
+**Qué se automatiza**
+
+- Build del frontend  
+- Tests del backend  
+- Generación de documentación  
+- Publicación de documentación en GitHub Pages  
+- Construcción y publicación de imágenes Docker  
+
+**Por qué está bien implementado**  
+Se automatizan tareas clave del desarrollo, asegurando consistencia en el código y en la documentación.
+
+Actualmente, el despliegue completo del stack (frontend + backend + base de datos) en un servidor externo se realiza de forma manual mediante Docker Compose.
+
+**Evidencia**
+
+![Imagen 1: workflow CI](../assets/dpl/dpl_6_1.png)
+
+*Pipeline de GitHub Actions ejecutando build y validaciones.*
+
+---
+
+## 7. Documentación del proyecto
+
+**Explicación aplicada al proyecto**  
+La documentación se genera mediante MkDocs.
+
+**Características**
+
+- Estructura modular por apartados (DEW, DSW, DPL, etc.)  
+- Navegación clara  
+- Contenido preparado para defensa  
+
+**Por qué está bien implementado**  
+Permite mantener documentación actualizada y alineada con el desarrollo del proyecto.
+
+**Evidencia**
+
+![Imagen 1: mkdocs](../assets/dpl/dpl_7_1.png)
+
+*Configuración de MkDocs y estructura de documentación.*
+
+---
+
+## 8. Despliegue de la documentación
+
+**Explicación aplicada al proyecto**  
+La documentación se publica automáticamente mediante GitHub Pages.
+
+**Qué permite**
+
+- Acceso público a la documentación  
+- Visualización del proyecto sin necesidad de ejecutar código  
+
+**Por qué está bien implementado**  
+Demuestra integración con herramientas reales de despliegue y facilita la evaluación del proyecto.
+
+**Evidencia**
+
+![Imagen 1: github pages](../assets/dpl/dpl_8_1.png)
+
+*Despliegue automático de la documentación mediante GitHub Pages.*
+
+---
+
+## 10. Conclusión DPL
+
+El despliegue de FitTrack cumple los criterios de DPL: uso de Docker y NGINX, orquestación con Docker Compose, separación de entornos, control de versiones con Git, integración continua mediante GitHub Actions y documentación generada y desplegada con MkDocs y GitHub Pages.
+
