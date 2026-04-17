@@ -53,7 +53,7 @@ No obstante, la accesibilidad no es homogénea en toda la aplicación, especialm
 
 ![Imagen 1: formulario accesible](../assets/dor/dor_3_1.png)
 
-*Inputs con label, validación y mensajes accesibles.*
+*Inputs con label, validación y foco visible.*
 
 ![Imagen 2: modal accesible](../assets/dor/dor_3_2.png)
 
@@ -125,13 +125,6 @@ La interfaz está diseñada en función del flujo real del usuario.
 El usuario puede completar tareas sin ambigüedad, siguiendo un flujo claro.
 
 Se proporciona feedback visual en los momentos clave del uso de la aplicación.
-
-**Evidencia**
-
-![Imagen 1: flujo de uso](../assets/dor/dor_6_1.png)
-
-*Flujo completo de uso desde rutinas hasta registro de entreno.*
-
 ---
 
 ## 9. Conclusión DOR

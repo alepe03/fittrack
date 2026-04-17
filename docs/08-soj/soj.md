@@ -35,6 +35,19 @@ La aplicación tiene un impacto indirecto al ser una herramienta digital ligera.
 
 ---
 
+### ODS 9: Industria, innovación e infraestructura
+
+**Justificación**  
+FitTrack se basa en el desarrollo de una solución digital utilizando tecnologías modernas de desarrollo web.
+
+**Aplicación en el proyecto**
+
+- Uso de arquitectura frontend/backend  
+- Desarrollo con tecnologías actuales (Vue, Laravel)  
+- Uso de Docker para despliegue  
+
+---
+
 ## 3. Identificación de impactos, riesgos y oportunidades
 
 Se identifican los siguientes elementos:
@@ -91,20 +104,53 @@ Para evaluar los impactos se utiliza un criterio simple:
 - **Alta materialidad (>15)**  
   - Organización del entrenamiento  
   - Continuidad en el ejercicio  
-  - Experiencia de usuario  
+  - Mejora de experiencia de usuario  
 
 - **Materialidad media (8-15)**  
   - Reducción de fricción  
   - Dependencia de la aplicación  
-  - Mejora del sistema  
+  - Mejora del sistema de seguimiento  
 
 - **Materialidad baja (<8)**  
   - Uso incorrecto como sistema experto  
 
 ---
 
-## 6. Conclusión SOJ
+## 5. Normativa y buenas prácticas
+
+El proyecto tiene en cuenta aspectos básicos relacionados con el desarrollo responsable de software:
+
+- Reglamento General de Protección de Datos (RGPD)  
+- Protección de datos personales del usuario  
+- Uso responsable de la información  
+
+Además, se aplican buenas prácticas técnicas:
+
+- Separación de frontend y backend  
+- Uso de arquitectura escalable  
+- Desarrollo estructurado y mantenible  
+
+Estos aspectos serían especialmente relevantes en una versión productiva del sistema.
+
+---
+
+## 6. Defensa del proyecto
+
+Durante la defensa se pueden explicar:
+
+- La relación del proyecto con el ODS 3 (salud y bienestar)  
+- El impacto positivo en hábitos de entrenamiento  
+- La identificación de riesgos como la dependencia digital  
+- La evaluación de materialidad mediante criterios objetivos  
+
+Esto permite justificar el proyecto desde una perspectiva de sostenibilidad aplicada al desarrollo de software.
+
+---
+
+## 7. Conclusión SOJ
 
 FitTrack se alinea principalmente con el ODS 3 (salud y bienestar), aportando valor a nivel individual mediante la organización del entrenamiento.
+
+Además, se identifican impactos, riesgos y oportunidades relevantes, evaluados mediante un análisis de materialidad que permite priorizar los elementos más importantes.
 
 Los impactos más relevantes están relacionados con la mejora de hábitos y continuidad del ejercicio, mientras que los impactos negativos son limitados y controlables.
