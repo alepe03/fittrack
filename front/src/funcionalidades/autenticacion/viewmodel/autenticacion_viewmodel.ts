@@ -40,6 +40,14 @@ export const useAutenticacionViewModel = defineStore('autenticacion', () => {
     usuario.value = user
   }
 
+  async function refrescarSesion(): Promise<void> {
+    if (!obtenerToken()) {
+      throw new Error('Sesión no disponible')
+    }
+    const { user } = await autenticacionRepositorio.me()
+    usuario.value = user
+  }
+
   async function login(credenciales: UsuarioLogin): Promise<boolean> {
     cargando.value = true
     error.value = null
@@ -93,6 +101,7 @@ export const useAutenticacionViewModel = defineStore('autenticacion', () => {
     register,
     logout,
     asegurarSesion,
+    refrescarSesion,
     limpiarSesionLocal,
   }
 })

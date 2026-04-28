@@ -8,12 +8,17 @@ use App\Models\EntrenoEjercicio;
 use App\Models\EntrenoSerie;
 use App\Models\Rutina;
 use App\Models\RutinaSerie;
+use App\Services\SubscriptionGuardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class EntrenoController extends Controller
 {
+    public function __construct(
+        private SubscriptionGuardService $subscriptionGuard,
+    ) {}
+
     /**
      * Listado ligero (sin ejercicios/series): la UI del histórico solo necesita cabecera del entreno.
      */
@@ -42,6 +47,10 @@ class EntrenoController extends Controller
     public function store(Request $request)
     {
         $request->validate($this->validationRules($request));
+        $this->subscriptionGuard->assertCanUseAdvancedTrainingFeatures(
+            $request->user(),
+            $request->all()
+        );
 
         return DB::transaction(function () use ($request) {
             $entreno = Entreno::create([
@@ -66,6 +75,10 @@ class EntrenoController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate($this->validationRules($request));
+        $this->subscriptionGuard->assertCanUseAdvancedTrainingFeatures(
+            $request->user(),
+            $request->all()
+        );
 
         $entreno = Entreno::query()
             ->where('user_id', $request->user()->id)

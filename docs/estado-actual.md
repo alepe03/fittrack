@@ -19,17 +19,17 @@ Este documento sirve como “hoja de ruta honesta” para la entrega y defensa: 
   - composables de utilidades (filtros/orden, persistencia temporal)
 
 ### Parcial / temporal
-- Autenticación: token “simulado” desde el frontend (no autenticación real contra backend protegida).
-- Entrenos: el frontend mantiene el flujo con persistencia mock; en esta fase no está integrado vía endpoints REST reales de entrenos.
+- No hay pasarela de pago real; la suscripcion se gestiona con simulacion segura.
+- No se usa Stripe en esta fase.
 
 ### Futuro
-- Integración REST completa de entrenos desde frontend.
-- Autenticación real integrada con backend (protección de endpoints).
+- Pasarela de pago real y gestion de cobro.
+- Exportacion opcional de comprobante en PDF.
 - Catálogo global de ejercicios y estadísticas de progreso.
 
 ## Backend (Laravel + PostgreSQL)
 
-### Implementado y validado (rutinas)
+### Implementado y validado
 - Migraciones, modelos Eloquent y relaciones para:
   - `rutinas`
   - `rutina_ejercicios`
@@ -38,14 +38,27 @@ Este documento sirve como “hoja de ruta honesta” para la entrega y defensa: 
 - API REST de rutinas implementada:
   - `GET/POST/PUT/DELETE /api/rutinas`
   - `POST /api/rutinas/{id}/duplicar`
-- Validación del payload y operaciones en transacciones.
+- API REST de entrenos implementada y consumida por frontend:
+  - `GET/POST/PUT/DELETE /api/entrenos`
+  - `GET /api/entrenos/{id}`
+- API de autenticacion con Sanctum:
+  - `POST /api/auth/register`
+  - `POST /api/auth/login`
+  - `GET /api/auth/me`
+  - `POST /api/auth/logout`
+- API de suscripcion SSG:
+  - `POST /api/subscription/upgrade-simulated` (ruta protegida con `auth:sanctum`)
+  - `POST /api/subscription/cancel` (ruta protegida con `auth:sanctum`)
+- Validacion de payload y operaciones en transacciones donde corresponde.
 
-### Parcial / sin integración REST todavía
-- Aunque el esquema BD incluye tablas de entrenos y relaciones, en esta fase no están conectados a endpoints REST consumidos por el frontend.
+### Parcial / temporal
+- No existe persistencia de facturas en base de datos (el comprobante de suscripcion se devuelve en la respuesta del upgrade y se muestra en frontend).
+- El sistema de pago es simulado (sin cobro real).
+- Si el usuario ya esta en Free, la cancelacion devuelve error `409` para evitar cambios inconsistentes.
 
 ### Futuro
-- Endpoints REST de entrenos (crear/listar/detalle según el frontend).
-- Autenticación real y protección de rutas API.
+- Integracion con pasarela de pago real.
+- Historial de comprobantes/facturas persistidos y opcion PDF.
 
 ## Base de datos (PostgreSQL)
 - Migraciones para rutinas: implementadas (y utilizadas por la API real).
@@ -63,7 +76,7 @@ Este documento sirve como “hoja de ruta honesta” para la entrega y defensa: 
 
 ## Criterios no cubiertos completamente (honestidad del alcance)
 - **DSW / DPL:** Docker Compose + Nginx operativos en el repo; CI en Actions; documentación en Pages. **No** hay despliegue automático del stack de aplicación (imágenes/contenedores Vue+Laravel) a un servidor remoto de producción.
-- **SSG (gestión de usuarios/clientes y paneles):** actualmente existe autenticación simulada en frontend y no hay gestión real de usuarios en backend protegida por auth.
+- **SSG (gestion empresarial):** el ciclo minimo de suscripcion esta implementado (alta con comprobante y cancelacion), protegido con Sanctum, pero sin cobro real ni facturacion fiscal completa.
 - **SOJ e IPW (impacto/ODS y aspectos de mercado/sostenibilidad/marketing):** no están desarrollados ni documentados en el repo; se deja estructura para completar en una fase posterior si aplica en la entrega.
 
 ## Despliegue final

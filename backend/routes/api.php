@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EntrenoController;
 use App\Http\Controllers\Api\RutinaController;
+use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
@@ -11,6 +12,8 @@ Route::post('/auth/login', [AuthController::class, 'login'])->middleware('thrott
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/subscription/upgrade-simulated', [SubscriptionController::class, 'upgradeSimulated']);
+    Route::post('/subscription/cancel', [SubscriptionController::class, 'cancel']);
 
     Route::get('/rutinas', [RutinaController::class, 'index']);
     Route::get('/rutinas/{id}', [RutinaController::class, 'show']);
