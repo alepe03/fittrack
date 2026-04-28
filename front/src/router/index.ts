@@ -57,6 +57,11 @@ const router = createRouter({
       name: 'entreno-detail',
       component: () => import('@/funcionalidades/entrenamientos/view/pantallas/entreno_detail_screen.vue'),
     },
+    {
+      path: '/suscripcion',
+      name: 'suscripcion',
+      component: () => import('@/funcionalidades/suscripcion/view/pantallas/suscripcion_screen.vue'),
+    },
     { path: '/', redirect: '/rutinas' },
   ],
 })

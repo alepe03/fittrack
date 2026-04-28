@@ -17,6 +17,7 @@ export interface UsuarioSesion {
   id: number
   name: string
   email: string
+  plan: 'free' | 'premium'
 }
 
 export interface RespuestaAuth {

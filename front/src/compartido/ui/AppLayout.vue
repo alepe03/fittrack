@@ -30,6 +30,13 @@ async function salir() {
           >
             Entrenos
           </RouterLink>
+          <RouterLink
+            to="/suscripcion"
+            class="text-gray-700 hover:text-blue-600 font-medium px-1 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded"
+            active-class="text-blue-600"
+          >
+            Suscripción
+          </RouterLink>
         </nav>
         <button
           v-if="viewModelAuth.estaLogueado"

@@ -7,6 +7,7 @@ import { useEntrenamientoEnCurso } from '@/compartido/composables/useEntrenamien
 import { useMetricasEntreno } from '../../composables/useMetricasEntreno'
 import { useCronometroSesion } from '../../composables/useCronometroSesion'
 import { useTemporizadorDescanso } from '../../composables/useTemporizadorDescanso'
+import { usePlanFeatures } from '@/compartido/composables/usePlanFeatures'
 import BotonPrimario from '@/compartido/ui/BotonPrimario.vue'
 import type { EntrenoItem, SerieReal } from '../../model/entidades'
 
@@ -14,6 +15,7 @@ const route = useRoute()
 const router = useRouter()
 const viewModelRutinas = useRutinasViewModel()
 const viewModelEntrenos = useEntrenamientosViewModel()
+const { isPremium } = usePlanFeatures()
 const { obtener: obtenerEnCurso, guardar: guardarEnCurso, limpiar: limpiarEnCurso } = useEntrenamientoEnCurso()
 
 const rutinaId = computed(() => route.params.rutinaId as string)
@@ -250,7 +252,13 @@ async function guardar() {
     rutinaId: viewModelRutinas.rutinaActual.id,
     nombreRutina: viewModelRutinas.rutinaActual.nombre,
     /** Mismos datos que la UI; el API solo serializa reps/peso/rir/orden/completada. */
-    items: items.value,
+    items: items.value.map((item) => ({
+      ...item,
+      series: item.series.map((serie) => ({
+        ...serie,
+        rir: isPremium.value ? serie.rir : null,
+      })),
+    })),
     notaGeneral: notaGeneral.value.trim() || undefined,
     duracionSegundos: cronometro.duracionSegundos.value,
     descansoSegundosUsado: temporizadorDescanso.duracionSegundos.value,
@@ -262,6 +270,12 @@ async function guardar() {
     if (!esEdicion.value) limpiarEnCurso()
     router.push(`/entrenos/${entreno.id}`)
   }
+}
+
+function onRpeChange(serie: SerieReal, value: string): void {
+  if (!isPremium.value) return
+  serie.rpe = value === '' ? null : Number(value)
+  serie.rir = calcularRirDesdeRpe(serie.rpe)
 }
 </script>
 
@@ -275,6 +289,13 @@ async function guardar() {
     <p v-if="viewModelRutinas.cargando" class="text-gray-600">Cargando rutina...</p>
     <p v-else-if="!viewModelRutinas.rutinaActual" class="text-red-600">{{ mensajeNoDisponible }}</p>
     <form v-else class="rounded-xl bg-white shadow p-4 sm:p-6 space-y-6" @submit.prevent="guardar">
+      <p
+        v-if="!isPremium"
+        class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800"
+        role="status"
+      >
+        Función disponible solo para usuarios Premium.
+      </p>
       <p class="text-xs text-gray-500">
         Introduce reps, peso y RPE por serie. El RIR se calcula automáticamente.
         Marca las series completadas para ver progreso y posibles PR.
@@ -433,11 +454,8 @@ async function guardar() {
               :id="idRpeSerie(item.ejercicioId, sIdx)"
               :value="serie.rpe === null || serie.rpe === undefined ? '' : String(serie.rpe)"
               class="w-full sm:w-20 rounded border border-gray-300 px-2 py-2 text-sm"
-              @change="(e) => {
-                const v = (e.target as HTMLSelectElement).value
-                serie.rpe = v === '' ? null : Number(v)
-                serie.rir = calcularRirDesdeRpe(serie.rpe)
-              }"
+              :disabled="!isPremium"
+              @change="(e) => onRpeChange(serie, (e.target as HTMLSelectElement).value)"
             >
               <option value="">—</option>
               <option value="5">RPE 5</option>

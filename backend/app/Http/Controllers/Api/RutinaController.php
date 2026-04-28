@@ -4,11 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Rutina;
+use App\Services\SubscriptionGuardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class RutinaController extends Controller
 {
+    public function __construct(
+        private SubscriptionGuardService $subscriptionGuard,
+    ) {}
+
     public function index()
     {
         $rutinas = Rutina::query()
@@ -49,6 +54,8 @@ class RutinaController extends Controller
 
     public function store(Request $request)
     {
+        $this->subscriptionGuard->assertCanCreateRoutine($request->user());
+
         $data = $request->validate($this->rules());
 
         return DB::transaction(function () use ($data, $request) {
@@ -141,9 +148,11 @@ class RutinaController extends Controller
             return response()->json(['message' => 'Rutina no encontrada'], 404);
         }
 
+        $this->subscriptionGuard->assertCanCreateRoutine($request->user());
+
         return DB::transaction(function () use ($original) {
             $nuevaRutina = Rutina::create([
-                'user_id' => $original->user_id,
+                'user_id' => auth()->id(),
                 'nombre' => $original->nombre.' (copia)',
                 'descripcion' => $original->descripcion,
             ]);
