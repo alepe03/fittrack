@@ -96,6 +96,7 @@ const mejorLogroReciente = computed(() => {
 
     if (prSeries.length > 0) {
       const principal = prSeries[0]
+      if (!principal) continue
       const extras = prSeries.length - 1
       return {
         titulo: `PR en ${principal.ejercicio} — ${principal.peso} kg x ${principal.reps} reps (Serie ${principal.serieIdx})`,
@@ -138,7 +139,10 @@ const rachaSimple = computed(() => {
   if (diasUnicos.length === 0) return 0
   let racha = 1
   for (let i = 1; i < diasUnicos.length; i += 1) {
-    const diffDias = Math.round((diasUnicos[i - 1] - diasUnicos[i]) / (24 * 60 * 60 * 1000))
+    const diaAnterior = diasUnicos[i - 1]
+    const diaActual = diasUnicos[i]
+    if (diaAnterior === undefined || diaActual === undefined) break
+    const diffDias = Math.round((diaAnterior - diaActual) / (24 * 60 * 60 * 1000))
     if (diffDias === 1) racha += 1
     else break
   }
