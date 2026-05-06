@@ -3,11 +3,18 @@
  * Modal base con slots: titulo, contenido (default) y pie (acciones).
  * Cumplimiento criterio DEW: uso de slots.
  */
-import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useId, watch } from 'vue'
 
 const props = defineProps<{
   visible: boolean
+  /** Si se omite, se genera un id único por instancia (evita colisiones entre modales). */
+  tituloId?: string
 }>()
+
+const tituloIdInterno = useId()
+const tituloIdAria = computed(() => props.tituloId ?? tituloIdInterno)
+
+const descripcionId = useId()
 
 const emit = defineEmits<{
   cerrar: []
@@ -98,8 +105,8 @@ onBeforeUnmount(() => {
       class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-titulo-borrar"
-      aria-describedby="modal-descripcion"
+      :aria-labelledby="$slots.titulo ? tituloIdAria : undefined"
+      :aria-describedby="descripcionId"
       @click.self="cerrarModal"
       @keydown="alKeydown"
     >
@@ -110,9 +117,9 @@ onBeforeUnmount(() => {
         @click.stop
       >
         <div v-if="$slots.titulo" class="px-4 py-3 border-b border-gray-200">
-          <slot name="titulo" />
+          <slot name="titulo" :titulo-id="tituloIdAria" />
         </div>
-        <div id="modal-descripcion" class="px-4 py-3 overflow-auto flex-1">
+        <div :id="descripcionId" class="px-4 py-3 overflow-auto flex-1">
           <slot />
         </div>
         <div v-if="$slots.pie" class="px-4 py-3 border-t border-gray-200 flex justify-end gap-2">

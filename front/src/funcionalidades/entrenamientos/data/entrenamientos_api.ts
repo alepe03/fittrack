@@ -99,16 +99,13 @@ function mapEntrenoDesdeApi(data: any): Entreno {
 export async function listarEntrenos(): Promise<Entreno[]> {
   try {
     const resp = await clienteApi.get('/entrenos')
-    console.log('[entrenamientos_api] GET /entrenos respuesta', resp.status, resp.data)
     if (!Array.isArray(resp.data)) {
       throw new Error('La respuesta del listado de entrenos no es válida.')
     }
     return resp.data.map((row: any) => mapEntrenoDesdeApi(row))
   } catch (error: unknown) {
-    console.error('[entrenamientos_api] GET /entrenos error', error)
     entrenos = cargarDesdeStorage()
     if (entrenos.length > 0) {
-      console.warn('[entrenamientos_api] GET /entrenos: usando fallback localStorage')
       return [...entrenos].sort((a, b) => (b.fechaISO > a.fechaISO ? 1 : -1))
     }
     throw new Error(extraerMensajesRespuestaError(error))
@@ -118,7 +115,6 @@ export async function listarEntrenos(): Promise<Entreno[]> {
 export async function obtenerEntrenoPorId(id: string): Promise<Entreno | null> {
   try {
     const resp = await clienteApi.get(`/entrenos/${id}`)
-    console.log('[entrenamientos_api] GET /entrenos/:id respuesta', id, resp.status, resp.data)
     return mapEntrenoDesdeApi(resp.data)
   } catch (error: unknown) {
     const anyErr = error as any
@@ -126,18 +122,15 @@ export async function obtenerEntrenoPorId(id: string): Promise<Entreno | null> {
       entrenos = cargarDesdeStorage()
       return entrenos.find((e) => e.id === id) ?? null
     }
-    console.error('[entrenamientos_api] GET /entrenos/:id error', error)
     throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
 export async function crearEntreno(datos: Omit<Entreno, 'id'>): Promise<Entreno> {
   const payload = construirPayloadApi(datos)
-  console.log('[entrenamientos_api] POST /entrenos payload', JSON.stringify(payload, null, 2))
 
   try {
     const resp = await clienteApi.post('/entrenos', payload)
-    console.log('[entrenamientos_api] POST /entrenos respuesta', resp.status, resp.data)
 
     const entrenoId = resp.data?.entreno_id
     if (entrenoId == null) {
@@ -145,45 +138,37 @@ export async function crearEntreno(datos: Omit<Entreno, 'id'>): Promise<Entreno>
     }
 
     const showResp = await clienteApi.get(`/entrenos/${entrenoId}`)
-    console.log('[entrenamientos_api] GET /entrenos/:id tras crear', entrenoId, showResp.status, showResp.data)
 
     const entreno = mapEntrenoDesdeApi(showResp.data)
     return entreno
   } catch (error: unknown) {
-    console.error('[entrenamientos_api] POST /entrenos error', error)
     throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
 export async function actualizarEntreno(id: string, datos: Omit<Entreno, 'id'>): Promise<Entreno | null> {
   const payload = construirPayloadApi(datos)
-  console.log('[entrenamientos_api] PUT /entrenos/:id payload', id, JSON.stringify(payload, null, 2))
 
   try {
     const resp = await clienteApi.put(`/entrenos/${id}`, payload)
-    console.log('[entrenamientos_api] PUT /entrenos/:id respuesta', id, resp.status, resp.data)
 
     const entrenoId = resp.data?.entreno_id ?? Number(id)
     const showResp = await clienteApi.get(`/entrenos/${entrenoId}`)
-    console.log('[entrenamientos_api] GET /entrenos/:id tras actualizar', entrenoId, showResp.status, showResp.data)
     return mapEntrenoDesdeApi(showResp.data)
   } catch (error: unknown) {
     const anyErr = error as any
     if (anyErr?.response?.status === 404) return null
-    console.error('[entrenamientos_api] PUT /entrenos/:id error', error)
     throw new Error(extraerMensajesRespuestaError(error))
   }
 }
 
 export async function eliminarEntreno(id: string): Promise<boolean> {
   try {
-    const resp = await clienteApi.delete(`/entrenos/${id}`)
-    console.log('[entrenamientos_api] DELETE /entrenos/:id respuesta', id, resp.status, resp.data)
+    await clienteApi.delete(`/entrenos/${id}`)
     return true
   } catch (error: unknown) {
     const anyErr = error as any
     if (anyErr?.response?.status === 404) return false
-    console.error('[entrenamientos_api] DELETE /entrenos/:id error', error)
     throw new Error(extraerMensajesRespuestaError(error))
   }
 }

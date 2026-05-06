@@ -386,7 +386,14 @@ function onRpeChange(serie: SerieReal, value: string): void {
         <p class="mt-1 text-sm text-blue-900">
           {{ resumen.seriesCompletadas }} de {{ resumen.totalSeries }} series completadas ({{ resumen.porcentajeCompletado }}%)
         </p>
-        <div class="mt-2 h-2 w-full rounded-full bg-blue-100 overflow-hidden">
+        <div
+          class="mt-2 h-2 w-full rounded-full bg-blue-100 overflow-hidden"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="resumen.porcentajeCompletado"
+          aria-label="Progreso de series completadas en el entreno"
+        >
           <div
             class="h-full bg-blue-600 transition-all"
             :style="{ width: `${resumen.porcentajeCompletado}%` }"

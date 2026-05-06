@@ -48,7 +48,6 @@ export const useEntrenamientosViewModel = defineStore('entrenamientos', () => {
       entrenos.value = await entrenamientosRepositorio.listar()
       return nuevo
     } catch (e) {
-      console.error('[entrenamientos_vm] crearEntreno error', e)
       error.value = e instanceof Error ? e.message : 'Error al guardar entreno'
       return null
     } finally {

@@ -78,10 +78,6 @@ function mapEjerciciosParaApi(ejercicios: RutinaEjercicio[]): any[] {
 
 export async function listarRutinas(): Promise<Rutina[]> {
   const resp = await clienteApi.get('/rutinas')
-  if (import.meta.env.DEV) {
-    // Temporal para verificar el contrato real que devuelve el backend en entorno local.
-    console.log('[rutinas_api] GET /rutinas payload:', resp.data)
-  }
 
   if (!Array.isArray(resp.data)) {
     throw new Error('La respuesta del listado de rutinas no es válida.')

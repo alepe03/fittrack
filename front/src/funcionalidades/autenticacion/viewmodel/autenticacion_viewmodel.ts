@@ -48,6 +48,10 @@ export const useAutenticacionViewModel = defineStore('autenticacion', () => {
     usuario.value = user
   }
 
+  function actualizarUsuarioSesion(user: UsuarioSesion): void {
+    usuario.value = user
+  }
+
   async function login(credenciales: UsuarioLogin): Promise<boolean> {
     cargando.value = true
     error.value = null
@@ -102,6 +106,7 @@ export const useAutenticacionViewModel = defineStore('autenticacion', () => {
     logout,
     asegurarSesion,
     refrescarSesion,
+    actualizarUsuarioSesion,
     limpiarSesionLocal,
   }
 })

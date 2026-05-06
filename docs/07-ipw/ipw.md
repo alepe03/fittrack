@@ -6,12 +6,16 @@ FitTrack se plantea como una aplicación orientada a la organización del entren
 
 Este apartado analiza el mercado, el usuario, la competencia y define un planteamiento básico de marketing y sostenibilidad, aplicados al proyecto.
 
+Además, se enfoca en entender cómo un producto técnico puede posicionarse dentro de un entorno real, teniendo en cuenta tanto las necesidades del usuario como las posibles vías de evolución del propio proyecto.
+
 ---
 
 ## 2. Análisis de mercado
 
 **Contexto**  
-El mercado de aplicaciones fitness está ampliamente desarrollado y en crecimiento, impulsado por el aumento del interés en la salud y el entrenamiento personal. Actualmente existen numerosas aplicaciones que ofrecen desde registro básico hasta análisis avanzado del rendimiento.
+El mercado de aplicaciones fitness está ampliamente desarrollado y en crecimiento, impulsado por el aumento del interés en la salud, el entrenamiento personal y el seguimiento del rendimiento.
+
+Actualmente existen numerosas aplicaciones que ofrecen desde registro básico hasta análisis avanzado del rendimiento, lo que genera un entorno competitivo con soluciones muy completas.
 
 **Problema detectado**  
 Muchos usuarios no necesitan herramientas complejas, sino una forma clara de:
@@ -47,6 +51,8 @@ El proyecto identifica una necesidad real dentro de un mercado existente y defin
 
 **Por qué está bien definido**  
 Se enfoca en un perfil concreto y realista, alineado con el alcance del proyecto y con necesidades comunes en el uso diario.
+
+Además, este tipo de usuario es habitual en entornos reales, lo que hace que el producto tenga sentido práctico.
 
 ---
 
@@ -84,15 +90,29 @@ FitTrack es una aplicación web que permite:
 
 El producto se centra en la funcionalidad principal sin añadir complejidad innecesaria, priorizando la experiencia de uso.
 
+Además, se plantea como un producto escalable, donde en una versión futura se podrían añadir funcionalidades como estadísticas avanzadas o personalización del entrenamiento.
+
+También podría evolucionar hacia un enfoque orientado a profesionales del entrenamiento, donde entrenadores puedan gestionar múltiples usuarios y supervisar su progreso desde una única interfaz.
+
 ---
 
 ### Precio
 
-El proyecto se plantea como:
+El modelo de FitTrack se basa en un sistema freemium:
 
-- Aplicación gratuita (fase académica)  
+- **Plan Free**
+  - Permite crear y gestionar hasta 3 rutinas  
+  - No incluye funcionalidades avanzadas como RIR o temporizador de descanso en entrenos  
 
-Esto permite centrarse en validar la funcionalidad sin barreras de acceso para el usuario.
+- **Plan Premium**
+  - Permite crear rutinas sin límite  
+  - Incluye funcionalidades avanzadas de seguimiento del entrenamiento  
+
+Este modelo permite ofrecer una versión funcional gratuita para la mayoría de usuarios, mientras que las funcionalidades más avanzadas se reservan para usuarios que buscan un mayor nivel de control y seguimiento.
+
+Desde el punto de vista del proyecto, este sistema está implementado a nivel backend mediante control de acceso a funcionalidades, lo que refuerza la coherencia entre el planteamiento teórico y la implementación técnica.
+
+En un contexto real, el plan Premium podría asociarse a una suscripción mensual, adaptando el precio según el valor aportado al usuario.
 
 ---
 
@@ -104,6 +124,8 @@ Esto permite centrarse en validar la funcionalidad sin barreras de acceso para e
 
 Esto facilita el acceso multiplataforma y reduce la fricción de uso.
 
+En un escenario real, la aplicación podría desplegarse en proveedores cloud como VPS o plataformas tipo Render o Railway, optimizando costes según el uso y permitiendo escalar progresivamente.
+
 ---
 
 ### Promoción
@@ -112,7 +134,21 @@ Esto facilita el acceso multiplataforma y reduce la fricción de uso.
 - Documentación accesible mediante GitHub Pages  
 - Uso como parte de portfolio técnico personal  
 
-Se prioriza la visibilidad académica y profesional, mostrando el proyecto como ejemplo de desarrollo completo.
+Además, en un contexto más realista, la aplicación podría promocionarse mediante:
+
+- Redes sociales orientadas a fitness y entrenamiento  
+- Colaboración con entrenadores personales o pequeños gimnasios  
+- Publicación en comunidades relacionadas con desarrollo y deporte  
+
+A nivel de evolución del producto, FitTrack podría orientarse hacia un modelo donde los entrenadores gestionen las rutinas de sus clientes dentro de la plataforma, permitiendo:
+
+- Asignar rutinas a usuarios  
+- Hacer seguimiento del progreso  
+- Centralizar la planificación del entrenamiento  
+
+Esto abriría nuevas vías de promoción basadas en el uso profesional de la aplicación, especialmente en entornos de gimnasio o entrenamiento personal.
+
+De esta forma, la promoción no se limitaría al usuario final, sino también a profesionales del sector, ampliando el alcance del producto.
 
 ---
 
@@ -121,8 +157,10 @@ Se prioriza la visibilidad académica y profesional, mostrando el proyecto como 
 ### Impacto ambiental
 
 - Uso de arquitectura ligera  
-- Sin consumo excesivo de recursos  
+- Reducción de consumo innecesario de recursos  
 - Despliegue controlado mediante Docker  
+
+Esto permite optimizar el uso de recursos en comparación con aplicaciones más complejas.
 
 ---
 
@@ -132,6 +170,8 @@ Se prioriza la visibilidad académica y profesional, mostrando el proyecto como 
 - Facilita la organización del entrenamiento  
 - Accesible para distintos perfiles de usuario  
 
+Contribuye de forma indirecta a mejorar la calidad de vida del usuario.
+
 ---
 
 ### Impacto económico
@@ -139,6 +179,8 @@ Se prioriza la visibilidad académica y profesional, mostrando el proyecto como 
 - Coste bajo de desarrollo  
 - Uso de herramientas open source  
 - Escalable sin inversión inicial elevada  
+
+Permite que el proyecto sea viable sin grandes recursos económicos.
 
 ---
 
@@ -156,26 +198,16 @@ Además, se consideran aspectos relacionados con:
 - Protección de datos personales del usuario  
 - Seguridad en el almacenamiento de información  
 
-Estos aspectos serían especialmente relevantes en una versión productiva del proyecto.
+En una versión productiva, sería necesario implementar medidas como:
+
+- almacenamiento seguro de datos  
+- control de acceso  
+- gestión de consentimiento del usuario  
 
 ---
 
-## 8. Documentación y defensa
+## 8. Conclusión IPW
 
-**Documentación**
+FitTrack presenta un análisis coherente del mercado, usuario y competencia, junto con un planteamiento de marketing y sostenibilidad alineado con el alcance del proyecto.
 
-- Estructurada mediante MkDocs  
-- Organizada por bloques (DEW, DSW, DPL, DOR, IPW)  
-- Clara y preparada para evaluación  
-
-**Defensa**
-
-- Explicación del enfoque de mercado  
-- Justificación de decisiones de producto  
-- Relación entre funcionalidades y necesidades reales  
-
----
-
-## 9. Conclusión IPW
-
-FitTrack presenta un análisis coherente del mercado, usuario y competencia, junto con un planteamiento básico de marketing y sostenibilidad, alineado con el alcance del proyecto.
+Además, se ha tenido en cuenta la evolución futura del producto, considerando su posible orientación hacia profesionales del entrenamiento y su viabilidad en un contexto real.

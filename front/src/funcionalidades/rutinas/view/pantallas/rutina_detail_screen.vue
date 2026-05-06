@@ -109,8 +109,8 @@ async function confirmarDuplicar() {
       </BaseCard>
 
       <BaseModal :visible="mostrarModalBorrar" @cerrar="cerrarModalBorrar">
-        <template #titulo>
-          <h2 id="modal-titulo-borrar" class="text-lg font-semibold text-gray-800">Confirmar borrado</h2>
+        <template #titulo="{ tituloId }">
+          <h2 :id="tituloId" class="text-lg font-semibold text-gray-800">Confirmar borrado</h2>
         </template>
         <p class="text-gray-600">
           ¿Borrar esta rutina? También se eliminarán todos los entrenos asociados.

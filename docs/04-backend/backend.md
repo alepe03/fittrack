@@ -182,7 +182,21 @@ La estructura de la base de datos se define mediante migraciones de Laravel, ase
 *Definición de la tabla `rutinas` mediante migraciones Laravel, incluyendo claves foráneas y estructura de datos.*
 ---
 
-## 9. Conclusión DSW
+## 7. Seguridad y control de acceso
+
+El backend implementa autenticación mediante **Laravel Sanctum**, utilizando tokens Bearer en las peticiones.
+
+- Login y registro generan tokens mediante `createToken()`  
+- Las rutas protegidas se agrupan bajo `auth:sanctum`  
+- Cada consulta se filtra por `user_id`  
+
+Además, se aplican reglas de negocio directamente en backend mediante servicios como `SubscriptionGuardService`, evitando depender únicamente del frontend para limitar funcionalidades (por ejemplo, uso de RIR o temporizador en usuarios Free).
+
+Esto asegura que incluso manipulando el cliente, no se puedan saltar las restricciones del sistema.
+
+---
+
+## 8. Conclusión DSW
 
 El backend de FitTrack cumple los criterios de DSW: uso de NGINX como servidor, desarrollo en PHP mediante Laravel, implementación de una API REST funcional y estructurada, y uso de una base de datos relacional (PostgreSQL) correctamente modelada.
 

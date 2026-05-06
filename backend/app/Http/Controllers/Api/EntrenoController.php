@@ -124,9 +124,7 @@ class EntrenoController extends Controller
 
         $entreno->delete();
 
-        return response()->json([
-            'message' => 'Entreno eliminado correctamente',
-        ]);
+        return response()->noContent();
     }
 
     public function show(Request $request, $id)
@@ -150,7 +148,54 @@ class EntrenoController extends Controller
             ], 404);
         }
 
-        return response()->json($entreno);
+        return response()->json($this->formatEntreno($entreno));
+    }
+
+    /**
+     * Misma forma que la serialización Eloquent previa (snake_case, relaciones anidadas).
+     *
+     * @return array<string, mixed>
+     */
+    private function formatEntreno(Entreno $entreno): array
+    {
+        return [
+            'id' => $entreno->id,
+            'user_id' => $entreno->user_id,
+            'rutina_id' => $entreno->rutina_id,
+            'nombre_rutina' => $entreno->nombre_rutina,
+            'fecha_entreno' => $entreno->fecha_entreno,
+            'nota_general' => $entreno->nota_general,
+            'duracion_segundos' => $entreno->duracion_segundos,
+            'descanso_segundos_usado' => $entreno->descanso_segundos_usado,
+            'created_at' => $entreno->created_at,
+            'updated_at' => $entreno->updated_at,
+            'ejercicios' => $entreno->ejercicios->map(function (EntrenoEjercicio $ej): array {
+                return [
+                    'id' => $ej->id,
+                    'entreno_id' => $ej->entreno_id,
+                    'rutina_ejercicio_id' => $ej->rutina_ejercicio_id,
+                    'nombre' => $ej->nombre,
+                    'orden' => $ej->orden,
+                    'created_at' => $ej->created_at,
+                    'updated_at' => $ej->updated_at,
+                    'series' => $ej->series->map(function (EntrenoSerie $s): array {
+                        return [
+                            'id' => $s->id,
+                            'entreno_ejercicio_id' => $s->entreno_ejercicio_id,
+                            'orden' => $s->orden,
+                            'reps' => $s->reps,
+                            'peso' => $s->peso,
+                            'completada' => $s->completada,
+                            'rir' => $s->rir,
+                            'es_pr' => $s->es_pr,
+                            'comparativa_objetivo' => $s->comparativa_objetivo,
+                            'created_at' => $s->created_at,
+                            'updated_at' => $s->updated_at,
+                        ];
+                    })->values()->all(),
+                ];
+            })->values()->all(),
+        ];
     }
 
     /**
