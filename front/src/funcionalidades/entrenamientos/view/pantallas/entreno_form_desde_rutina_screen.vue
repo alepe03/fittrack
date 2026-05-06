@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed, ref, watch } from 'vue'
+import { onMounted, onBeforeUnmount, computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRutinasViewModel } from '@/funcionalidades/rutinas/viewmodel/rutinas_viewmodel'
 import { useEntrenamientosViewModel } from '../../viewmodel/entrenamientos_viewmodel'
@@ -34,6 +34,12 @@ const temporizadorDescanso = useTemporizadorDescanso(90)
 const descansoPersonalizadoMin = ref(1.5)
 const mostrarFinDescanso = computed(() => temporizadorDescanso.estado.value === 'terminado')
 const duracionDescansoMinutos = computed(() => (temporizadorDescanso.duracionSegundos.value / 60).toFixed(1))
+const serieDescansoActivaKey = ref<string | null>(null)
+const descansoActivoEtiqueta = ref('')
+const tarjetaDescansoPosicion = ref<{ x: number; y: number } | null>(null)
+const arrastrandoTarjetaDescanso = ref(false)
+const offsetArrastre = ref({ x: 0, y: 0 })
+const tarjetaDescansoRef = ref<HTMLElement | null>(null)
 const estadoCronometroTexto = computed(() =>
   cronometro.estado.value === 'corriendo'
     ? 'Corriendo'
@@ -219,9 +225,82 @@ function aplicarDescansoPersonalizado() {
   temporizadorDescanso.establecerDuracion(minutosASegundos(descansoPersonalizadoMin.value))
 }
 
-function iniciarDescansoDesdeSerie() {
+function claveSerieDescanso(ejercicioId: string, serieIdx: number): string {
+  return `${ejercicioId}-${serieIdx}`
+}
+
+function iniciarDescansoEnSerie(ejercicioId: string, serieIdx: number, nombreEjercicio: string) {
+  serieDescansoActivaKey.value = claveSerieDescanso(ejercicioId, serieIdx)
+  descansoActivoEtiqueta.value = `${nombreEjercicio} · Serie ${serieIdx + 1}`
+  temporizadorDescanso.reiniciar()
   temporizadorDescanso.iniciar()
 }
+
+function cerrarDescansoSerie() {
+  serieDescansoActivaKey.value = null
+  descansoActivoEtiqueta.value = ''
+  temporizadorDescanso.reiniciar()
+}
+
+const mostrarTarjetaDescanso = computed(() => serieDescansoActivaKey.value !== null)
+
+const estiloTarjetaDescanso = computed<Record<string, string>>(() => {
+  if (!tarjetaDescansoPosicion.value) {
+    return {
+      left: 'auto',
+      top: 'auto',
+      right: '1rem',
+      bottom: '1rem',
+    }
+  }
+  return {
+    left: `${tarjetaDescansoPosicion.value.x}px`,
+    top: `${tarjetaDescansoPosicion.value.y}px`,
+    right: 'auto',
+    bottom: 'auto',
+  }
+})
+
+function iniciarArrastreTarjetaDescanso(event: MouseEvent) {
+  if (!tarjetaDescansoRef.value) return
+  arrastrandoTarjetaDescanso.value = true
+  const rect = tarjetaDescansoRef.value.getBoundingClientRect()
+  if (!tarjetaDescansoPosicion.value) {
+    tarjetaDescansoPosicion.value = { x: rect.left, y: rect.top }
+  }
+  offsetArrastre.value = {
+    x: event.clientX - rect.left,
+    y: event.clientY - rect.top,
+  }
+  window.addEventListener('mousemove', moverTarjetaDescanso)
+  window.addEventListener('mouseup', finalizarArrastreTarjetaDescanso)
+}
+
+function moverTarjetaDescanso(event: MouseEvent) {
+  if (!arrastrandoTarjetaDescanso.value || !tarjetaDescansoRef.value) return
+  const ancho = tarjetaDescansoRef.value.offsetWidth
+  const alto = tarjetaDescansoRef.value.offsetHeight
+  const xMax = window.innerWidth - ancho - 8
+  const yMax = window.innerHeight - alto - 8
+  const x = Math.min(Math.max(8, event.clientX - offsetArrastre.value.x), xMax)
+  const y = Math.min(Math.max(8, event.clientY - offsetArrastre.value.y), yMax)
+  tarjetaDescansoPosicion.value = { x, y }
+}
+
+function finalizarArrastreTarjetaDescanso() {
+  arrastrandoTarjetaDescanso.value = false
+  window.removeEventListener('mousemove', moverTarjetaDescanso)
+  window.removeEventListener('mouseup', finalizarArrastreTarjetaDescanso)
+}
+
+function restablecerPosicionTarjetaDescanso() {
+  tarjetaDescansoPosicion.value = null
+}
+
+onBeforeUnmount(() => {
+  window.removeEventListener('mousemove', moverTarjetaDescanso)
+  window.removeEventListener('mouseup', finalizarArrastreTarjetaDescanso)
+})
 
 function validar(): boolean {
   for (const item of items.value) {
@@ -337,14 +416,13 @@ function onRpeChange(serie: SerieReal, value: string): void {
       <section class="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-3">
         <h2 class="text-sm font-semibold text-gray-800">Descanso entre series</h2>
         <p class="text-xs text-gray-600">
-          Configura el tiempo de descanso y úsalo entre series.
+          Configura el tiempo. El cronómetro se controla desde cada serie.
         </p>
         <div class="rounded-md border border-gray-200 bg-white p-3 space-y-3">
           <div class="flex flex-wrap gap-2">
             <button type="button" class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" @click="aplicarDescansoRapido(1)">1 min</button>
             <button type="button" class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" @click="aplicarDescansoRapido(1.5)">1,5 min</button>
             <button type="button" class="rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50" @click="aplicarDescansoRapido(2)">2 min</button>
-            <button type="button" class="rounded border border-blue-200 bg-blue-50 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-100" @click="temporizadorDescanso.iniciar()">Iniciar descanso</button>
           </div>
           <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
             <div>
@@ -363,21 +441,8 @@ function onRpeChange(serie: SerieReal, value: string): void {
               Aplicar
             </button>
           </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <p class="text-sm text-gray-700">
-              Descanso: <span class="font-semibold">{{ temporizadorDescanso.restanteFormateado }}</span>
-            </p>
-            <span class="text-xs rounded-full px-2 py-0.5"
-              :class="descansoEstadoClase"
-            >
-              {{ estadoDescansoTexto }}
-            </span>
-            <button type="button" class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" @click="temporizadorDescanso.pausar()">Pausar</button>
-            <button type="button" class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" @click="temporizadorDescanso.reanudar()">Reanudar</button>
-            <button type="button" class="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50" @click="temporizadorDescanso.reiniciar()">Reiniciar</button>
-          </div>
-          <p v-if="mostrarFinDescanso" class="text-sm font-medium text-emerald-700" role="status">
-            Descanso terminado. Puedes iniciar la siguiente serie.
+          <p class="text-sm text-gray-700">
+            Tiempo configurado: <span class="font-semibold">{{ duracionDescansoMinutos }} min</span>
           </p>
         </div>
       </section>
@@ -386,7 +451,14 @@ function onRpeChange(serie: SerieReal, value: string): void {
         <p class="mt-1 text-sm text-blue-900">
           {{ resumen.seriesCompletadas }} de {{ resumen.totalSeries }} series completadas ({{ resumen.porcentajeCompletado }}%)
         </p>
-        <div class="mt-2 h-2 w-full rounded-full bg-blue-100 overflow-hidden">
+        <div
+          class="mt-2 h-2 w-full rounded-full bg-blue-100 overflow-hidden"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          :aria-valuenow="resumen.porcentajeCompletado"
+          aria-label="Progreso de series completadas en el entreno"
+        >
           <div
             class="h-full bg-blue-600 transition-all"
             :style="{ width: `${resumen.porcentajeCompletado}%` }"
@@ -419,7 +491,7 @@ function onRpeChange(serie: SerieReal, value: string): void {
             <button
               type="button"
               class="rounded border border-blue-200 bg-blue-50 px-2 py-1 text-xs text-blue-700 hover:bg-blue-100"
-              @click="iniciarDescansoDesdeSerie"
+              @click="iniciarDescansoEnSerie(item.ejercicioId, sIdx, item.nombre)"
             >
               Iniciar descanso
             </button>
@@ -490,6 +562,37 @@ function onRpeChange(serie: SerieReal, value: string): void {
             </span>
           </div>
         </div>
+      </div>
+      <div
+        v-if="mostrarTarjetaDescanso"
+        ref="tarjetaDescansoRef"
+        class="fixed z-50 left-2 right-2 bottom-2 rounded-lg border border-blue-200 bg-blue-50 p-3 shadow-lg sm:left-auto sm:right-4 sm:bottom-4 sm:w-80"
+        :style="estiloTarjetaDescanso"
+      >
+        <div
+          class="mb-2 cursor-move select-none rounded bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-900"
+          @mousedown="iniciarArrastreTarjetaDescanso"
+          @dblclick="restablecerPosicionTarjetaDescanso"
+        >
+          {{ descansoActivoEtiqueta }}
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mb-2">
+          <p class="text-sm text-blue-900">
+            Descanso: <span class="font-semibold">{{ temporizadorDescanso.restanteFormateado }}</span>
+          </p>
+          <span class="text-xs rounded-full px-2 py-0.5" :class="descansoEstadoClase">
+            {{ estadoDescansoTexto }}
+          </span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="rounded border border-blue-300 bg-white px-2 py-1 text-xs text-blue-800 hover:bg-blue-100" @click="temporizadorDescanso.pausar()">Pausar</button>
+          <button type="button" class="rounded border border-blue-300 bg-white px-2 py-1 text-xs text-blue-800 hover:bg-blue-100" @click="temporizadorDescanso.reanudar()">Reanudar</button>
+          <button type="button" class="rounded border border-blue-300 bg-white px-2 py-1 text-xs text-blue-800 hover:bg-blue-100" @click="temporizadorDescanso.reiniciar()">Reiniciar</button>
+          <button type="button" class="rounded border border-gray-300 bg-white px-2 py-1 text-xs text-gray-700 hover:bg-gray-50" @click="cerrarDescansoSerie()">Cerrar</button>
+        </div>
+        <p v-if="mostrarFinDescanso" class="mt-2 text-xs font-medium text-emerald-700" role="status">
+          Descanso terminado. Puedes iniciar la siguiente serie.
+        </p>
       </div>
       <section class="rounded-lg border border-gray-200 bg-gray-50 p-3 space-y-2">
         <label for="nota-entreno" class="text-sm font-semibold text-gray-800">Nota general del entreno</label>

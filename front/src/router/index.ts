@@ -62,6 +62,16 @@ const router = createRouter({
       name: 'suscripcion',
       component: () => import('@/funcionalidades/suscripcion/view/pantallas/suscripcion_screen.vue'),
     },
+    {
+      path: '/progreso',
+      name: 'progreso',
+      component: () => import('@/funcionalidades/progreso/view/pantallas/progreso_screen.vue'),
+    },
+    {
+      path: '/perfil',
+      name: 'perfil',
+      component: () => import('@/funcionalidades/perfil/view/pantallas/perfil_screen.vue'),
+    },
     { path: '/', redirect: '/rutinas' },
   ],
 })

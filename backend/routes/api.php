@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EntrenoController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\RutinaController;
 use App\Http\Controllers\Api\SubscriptionController;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +13,9 @@ Route::post('/auth/login', [AuthController::class, 'login'])->middleware('thrott
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword']);
     Route::post('/subscription/upgrade-simulated', [SubscriptionController::class, 'upgradeSimulated']);
     Route::post('/subscription/cancel', [SubscriptionController::class, 'cancel']);
 

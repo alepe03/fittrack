@@ -4,23 +4,26 @@
 
 FitTrack es una aplicación web orientada a la planificación de rutinas de entrenamiento y al registro de sesiones realizadas.
 
-El objetivo principal es ofrecer una herramienta sencilla donde el usuario pueda organizar sus entrenamientos y consultar su evolución de forma clara.
+El objetivo principal es ofrecer una herramienta accesible y fácil de utilizar donde el usuario pueda organizar sus entrenamientos y consultar su evolución de forma clara.
 
 Está pensada para personas que entrenan de forma habitual y necesitan tener todo su progreso organizado en un mismo sitio.
 
 ---
 
-## Problema que resuelve
+## Problema que aborda la aplicación
 
-Cuando se entrena por cuenta propia, es bastante común no llevar un seguimiento claro.
+Actualmente existen muchas personas que entrenan de forma habitual pero no llevan un seguimiento claro de su progreso.
 
-Muchas veces:
+En muchos casos:
 
-- Las rutinas están dispersas  
-- No se registran los entrenamientos  
-- No se tiene una referencia real del progreso  
+- Las rutinas se guardan de forma desorganizada
+- Los entrenamientos no se registran correctamente
+- No existe una referencia clara sobre la evolución física o el rendimiento
+- Resulta difícil comprobar si realmente se está progresando
 
-Esto hace que sea más difícil mejorar de forma constante o saber si lo que se está haciendo está funcionando.
+Además, muchas aplicaciones existentes incluyen funcionalidades demasiado complejas o poco adaptadas a usuarios que simplemente quieren organizar sus entrenamientos de forma rápida y visual.
+
+FitTrack nace con el objetivo de ofrecer una solución más sencilla y centrada en el seguimiento real del entrenamiento.
 
 ---
 
@@ -38,25 +41,98 @@ El desarrollo del proyecto se ha hecho de forma progresiva, priorizando primero 
 
 ---
 
-## Arquitectura general
+## Valor que aporta
 
-La aplicación sigue una arquitectura web dividida en tres partes:
+FitTrack unifica en una sola aplicación varias funcionalidades relacionadas con el entrenamiento:
 
-- **Frontend:** desarrollado en Vue 3  
-- **Backend:** API REST en Laravel  
-- **Base de datos:** PostgreSQL  
+- Creación y planificación de rutinas
+- Registro de entrenamientos realizados
+- Seguimiento de marcas personales (PRs)
+- Visualización del progreso del usuario
+- Estadísticas y logros desbloqueables
+- Control de descansos entre series mediante temporizadores interactivos
 
-El frontend se comunica con el backend mediante peticiones HTTP, y el backend se encarga de gestionar la lógica y el acceso a datos.
+La aplicación busca ofrecer una experiencia clara y cómoda, priorizando la facilidad de uso y la organización del progreso deportivo.
+
+Además, durante el desarrollo se ha intentado mantener una arquitectura modular y escalable que permita añadir nuevas funcionalidades en futuras versiones.
+
+---
+# 2. Arquitectura general
+
+## Visión global del sistema
+
+La aplicación sigue una arquitectura web separada en varias capas:
+
+- **Frontend:** aplicación SPA desarrollada con Vue 3 y TypeScript
+- **Backend:** API REST desarrollada con Laravel
+- **Base de datos:** PostgreSQL
+- **Despliegue:** Docker y NGINX
+
+El frontend se comunica con el backend mediante peticiones HTTP para gestionar autenticación, rutinas, entrenamientos y progreso del usuario.
+
+El backend centraliza la lógica de negocio, validaciones y acceso a base de datos.
 
 ---
 
-## Stack tecnológico
+## Relación entre los distintos componentes
 
-Las tecnologías utilizadas en el proyecto son:
+### Frontend
 
-- **Frontend:** Vue 3 + TypeScript  
-- **Backend:** Laravel (PHP)  
-- **Base de datos:** PostgreSQL  
-- **Despliegue:** Docker + NGINX  
+El frontend está desarrollado con Vue 3 utilizando Composition API y TypeScript.
 
-La elección de este stack se basa en su facilidad de uso, modularidad y adecuación al tipo de proyecto.
+La aplicación sigue una arquitectura basada en módulos y el patrón MVVM, separando:
+
+- vistas
+- lógica de presentación
+- acceso a datos
+- modelos
+
+Entre las funcionalidades principales del frontend se encuentran:
+
+- Gestión de rutinas
+- Registro de entrenamientos
+- Panel de progreso del usuario
+- Visualización de PRs y logros
+- Temporizador flotante de descansos entre series
+- Navegación protegida mediante autenticación
+
+---
+
+### Backend
+
+El backend está desarrollado con Laravel y expone una API REST encargada de:
+
+- autenticación de usuarios
+- gestión de rutinas
+- almacenamiento de entrenamientos
+- cálculo de PRs
+- validaciones y control de acceso
+
+La comunicación con el frontend se realiza mediante respuestas JSON.
+
+---
+
+### Base de datos
+
+PostgreSQL se utiliza para almacenar toda la información de la aplicación:
+
+- usuarios
+- rutinas
+- entrenamientos
+- ejercicios
+- series realizadas
+- marcas personales
+
+La persistencia de datos permite consultar el historial y calcular estadísticas de progreso.
+
+---
+
+### Despliegue
+
+La aplicación se ejecuta mediante contenedores Docker.
+
+NGINX se utiliza como servidor web y proxy entre frontend y backend.
+
+La separación de servicios facilita el despliegue, mantenimiento y escalabilidad de la aplicación.
+
+La orquestación de servicios se realiza mediante Docker Compose.

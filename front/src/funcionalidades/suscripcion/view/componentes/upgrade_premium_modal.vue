@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, useId } from 'vue'
 import BaseModal from '@/compartido/ui/BaseModal.vue'
 import BotonPrimario from '@/compartido/ui/BotonPrimario.vue'
 import { upgradeSimulado, type UpgradeSimuladoResponse } from '../../data/suscripcion_api'
@@ -20,6 +20,11 @@ const expiry = ref('')
 const cvv = ref('')
 const error = ref<string | null>(null)
 const loading = ref(false)
+
+const idCardholder = useId()
+const idCardNumber = useId()
+const idExpiry = useId()
+const idCvv = useId()
 
 const cardNumberFormatted = computed({
   get: () => cardNumber.value,
@@ -97,8 +102,8 @@ async function confirmarUpgrade() {
     :visible="props.visible"
     @cerrar="cerrar"
   >
-    <template #titulo>
-      <h2 class="text-lg font-semibold text-gray-800">Hazte Premium</h2>
+    <template #titulo="{ tituloId }">
+      <h2 :id="tituloId" class="text-lg font-semibold text-gray-800">Hazte Premium</h2>
     </template>
 
     <div class="space-y-3">
@@ -107,8 +112,9 @@ async function confirmarUpgrade() {
       </p>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del titular</label>
+        <label :for="idCardholder" class="block text-sm font-medium text-gray-700 mb-1">Nombre del titular</label>
         <input
+          :id="idCardholder"
           v-model="cardholderName"
           type="text"
           class="w-full rounded border border-gray-300 px-3 py-2 text-sm"
@@ -117,8 +123,9 @@ async function confirmarUpgrade() {
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Tarjeta</label>
+        <label :for="idCardNumber" class="block text-sm font-medium text-gray-700 mb-1">Tarjeta</label>
         <input
+          :id="idCardNumber"
           v-model="cardNumberFormatted"
           type="text"
           inputmode="numeric"
@@ -129,8 +136,9 @@ async function confirmarUpgrade() {
 
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Caducidad</label>
+          <label :for="idExpiry" class="block text-sm font-medium text-gray-700 mb-1">Caducidad</label>
           <input
+            :id="idExpiry"
             v-model="expiryFormatted"
             type="text"
             inputmode="numeric"
@@ -139,8 +147,9 @@ async function confirmarUpgrade() {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+          <label :for="idCvv" class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
           <input
+            :id="idCvv"
             v-model="cvvFormatted"
             type="text"
             inputmode="numeric"

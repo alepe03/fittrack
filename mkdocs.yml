@@ -8,8 +8,8 @@ theme:
 
 nav:
   - Introducción: index.md
-  - 02 MVP y visión funcional:
-      - MVP y flujo principal: 02-mvp-vision-funcional/mvp-y-vision-funcional.md
+  - 02 Funcionalidades de la aplicación:
+      - Funcionamiento y flujo principal: 02-funcionalidades-aplicacion/funcionalidades-aplicacion.md
   - 03 Frontend:
       - Arquitectura y evidencias: 03-frontend/frontend.md
   - 04 Backend:
@@ -26,20 +26,6 @@ nav:
       - Gestión y aplicabilidad real: 09-ssg/ssg.md
   - 10 Conclusión:
       - Cierre y próximos pasos: 10-conclusion/conclusion.md
-  - Anexos técnicos (legado):
-      - Arquitectura (original): arquitectura.md
-      - Requisitos (original): requisitos.md
-      - Decisiones técnicas (original): decisiones.md
-      - MVP global (original): mvp.md
-      - MVP Frontend (original): frontend-mvp.md
-      - DEW Frontend (original): dew-frontend.md
-      - Auditoría DEW (original): auditoria-dew-fit-track.md
-      - Backend API (original): backend-api.md
-      - Backend BD (original): backend-bd.md
-      - Estado actual (original): estado-actual.md
-      - Despliegue (original): despliegue.md
-      - Guion presentación (original): presentacion-guion.md
-
 markdown_extensions:
   - admonition
   - tables

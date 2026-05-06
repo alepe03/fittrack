@@ -9,16 +9,18 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 class SubscriptionGuardService
 {
     private const FREE_ROUTINE_LIMIT = 3;
+
     private const FREE_ROUTINE_LIMIT_ERROR = [
         'code' => 'FREE_ROUTINE_LIMIT_REACHED',
         'message' => 'El plan Free permite hasta 3 rutinas. Hazte Premium para crear ilimitadas.',
         'required_plan' => 'premium',
     ];
+
     private const PREMIUM_FEATURE_REQUIRED_ERROR = [
         'code' => 'PREMIUM_FEATURE_REQUIRED',
         'message' => 'Función disponible solo para usuarios Premium.',
         'required_plan' => 'premium',
-    ]; // El campo feature se añade dinámicamente por caso.
+    ]; // El campo feature se añade dinámicamente por caso (p. ej. descanso, rir).
 
     public function assertCanCreateRoutine(User $user): void
     {
@@ -43,7 +45,12 @@ class SubscriptionGuardService
             return;
         }
 
-        // Fase temporal segura: solo bloquear uso avanzado de RIR.
+        if ($this->isUsingRestTimer($payload)) {
+            throw new HttpResponseException(
+                response()->json($this->premiumFeatureRequiredError('descanso'), 403)
+            );
+        }
+
         if ($this->isUsingRir($payload)) {
             throw new HttpResponseException(
                 response()->json($this->premiumFeatureRequiredError('rir'), 403)
