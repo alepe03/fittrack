@@ -1,7 +1,5 @@
 # 2. Funcionalidades de la aplicación
 
-Esta sección describe el funcionamiento real actual de FitTrack desde una perspectiva funcional. El objetivo es mostrar qué puede hacer hoy el usuario, cómo se conectan los módulos y qué evolución se ha añadido sobre el núcleo inicial del MVP.
-
 ## Flujo principal de uso
 
 El flujo recomendado de la aplicación es:
