@@ -12,7 +12,6 @@ export const clienteApi = axios.create({
   },
 })
 
-// Bearer Sanctum cuando hay token en localStorage
 clienteApi.interceptors.request.use((config) => {
   const token = obtenerToken()
   if (token) {

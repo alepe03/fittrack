@@ -44,7 +44,6 @@ function mapRutinaListadoDesdeApi(apiRutina: any): Rutina {
     createdAt: parseFechaIsoToMillis(apiRutina.created_at),
     updatedAt: parseFechaIsoToMillis(apiRutina.updated_at),
     ejercicios_count: Number(apiRutina.ejercicios_count ?? 0),
-    // En listado no hace falta traer ejercicios completos.
     ejercicios: [],
   }
 }
@@ -113,8 +112,7 @@ export async function crearRutina(rutina: Omit<Rutina, 'id'>): Promise<Rutina> {
 }
 
 export async function actualizarRutina(id: string, datos: Partial<Rutina>): Promise<Rutina | null> {
-  // Implementación mínima: si no viene la rutina completa (ejercicios), no tiene sentido
-  // porque la API hace reemplazo total.
+  // La API reemplaza la rutina completa; requiere nombre y ejercicios.
   if (!datos.nombre || !datos.ejercicios) return null
 
   const payload = {
